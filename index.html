@@ -200,7 +200,6 @@ if (!window.THREE) {
 
 <!-- Bottom Dock -->
 <div id="dock">
-  <!-- URL input bar -->
   <div class="url-bar">
     <input type="text" id="url-input" class="url-input" placeholder="Type or paste any URL..." />
     <button class="action-btn" id="btn-share" title="Share & Update">
@@ -210,7 +209,6 @@ if (!window.THREE) {
     </button>
   </div>
 
-  <!-- Season selector row -->
   <div class="season-row">
     <button class="season-btn active" data-s="0">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -237,7 +235,6 @@ if (!window.THREE) {
     </button>
   </div>
 
-  <!-- Palette swatches row -->
   <div class="palette-row" id="palette-row"></div>
 </div>
 
@@ -260,7 +257,6 @@ if (!window.THREE) {
 (function () {
   'use strict';
 
-  // ── Helper: Clean dynamic live URL ─────────────────────────────────────────
   function getDefaultUrl() {
     try {
       if (location.origin && location.origin !== 'null' && location.origin !== 'file://') {
@@ -283,66 +279,51 @@ if (!window.THREE) {
   var SEASONS = [
     {
       id: 'spring', name: 'Spring',
-      bgHex: 0xf6f1e7,
-      groundColor: 0xe6e0d4,
-      groundEdge: 0xb5ada0,
-      trunkColor: 0x543c2c,
-      leafColor: 0xf2a4b8,
-      leafAlt: 0xf8bcd0,
+      groundColor: 0xe6e0d4, groundEdge: 0xb5ada0,
+      trunkColor: 0x4a3425,
+      leafColor: 0xf3a6ba, leafAlt: 0xfcd4e0, leafHighlight: 0xffffff,
       particleColor: 0xf7b7cb,
-      grassColor: 0x6bb343,
-      finderColor: 0x4da832,
+      grassColor: 0x6bb343, finderColor: 0x4da832,
       weatherType: 'petals'
     },
     {
       id: 'summer', name: 'Summer',
-      bgHex: 0xf6f1e7,
-      groundColor: 0xe2ded2,
-      groundEdge: 0xa8a194,
-      trunkColor: 0x483222,
-      leafColor: 0x5fa838,
-      leafAlt: 0x76c24c,
+      groundColor: 0xe2ded2, groundEdge: 0xa8a194,
+      trunkColor: 0x3d2b1e,
+      leafColor: 0x5ea838, leafAlt: 0x76c24c, leafHighlight: 0x9be868,
       particleColor: 0x70be46,
-      grassColor: 0x458b22,
-      finderColor: 0x3d821e,
+      grassColor: 0x458b22, finderColor: 0x3d821e,
       weatherType: 'leaves'
     },
     {
       id: 'autumn', name: 'Autumn',
-      bgHex: 0xf6f1e7,
-      groundColor: 0xe4ded3,
-      groundEdge: 0xa59e92,
-      trunkColor: 0x4c3321,
-      leafColor: 0xf09c2a,
-      leafAlt: 0xf6b948,
+      groundColor: 0xe4ded3, groundEdge: 0xa59e92,
+      trunkColor: 0x442c1c,
+      leafColor: 0xeb9126, leafAlt: 0xf6b948, leafHighlight: 0xffdc73,
       particleColor: 0x948e84,
-      grassColor: 0xd49b28,
-      finderColor: 0xc48618,
+      grassColor: 0xd49b28, finderColor: 0xc48618,
       weatherType: 'rain'
     }
   ];
 
-  // ── Palette Swatches ───────────────────────────────────────────────────────
   var PALETTES = [
-    { name: 'Sakura Pink', hex: 0xf2a4b8, color: '#f2a4b8' },
-    { name: 'Purple',      hex: 0x9b6bcf, color: '#9b6bcf' },
-    { name: 'Berry Red',   hex: 0xe54b4b, color: '#e54b4b' },
-    { name: 'Golden Amber',hex: 0xf0a500, color: '#f0a500' },
-    { name: 'Sky Blue',    hex: 0x3b82f6, color: '#3b82f6' },
-    { name: 'Slate Teal',  hex: 0x2d7a6b, color: '#2d7a6b' }
+    { name: 'Sakura Pink',  hex: 0xf3a6ba, color: '#f3a6ba' },
+    { name: 'Purple',       hex: 0x9b6bcf, color: '#9b6bcf' },
+    { name: 'Berry Red',    hex: 0xe54b4b, color: '#e54b4b' },
+    { name: 'Golden Amber', hex: 0xf0a500, color: '#f0a500' },
+    { name: 'Sky Blue',     hex: 0x3b82f6, color: '#3b82f6' },
+    { name: 'Slate Teal',   hex: 0x2d7a6b, color: '#2d7a6b' }
   ];
 
-  // ── App State ──────────────────────────────────────────────────────────────
   var state = {
     url: getDefaultUrl(),
     season: 0,
     palette: 0,
     seed: 42,
-    qrMode: false, // false = 3D tree view, true = flat top-down QR scan view
+    qrMode: false,
     muted: true
   };
 
-  // Parse query parameter ?q= (same format as ICQR)
   try {
     var q = new URLSearchParams(location.search).get('q');
     if (q) {
@@ -357,19 +338,17 @@ if (!window.THREE) {
     }
   } catch(e) {}
 
-  // ── Seeded RNG ─────────────────────────────────────────────────────────────
   function makeRng(seed) {
     var s = seed >>> 0;
     return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
   }
 
-  // ── Three.js Scene Setup ───────────────────────────────────────────────────
+  // ── Three.js Scene ─────────────────────────────────────────────────────────
   var scene, camera, renderer, clock;
   var rootGroup, platformGroup, qrGroup, treeGroup, particleMesh;
+  var treeScale = 1.0;
   var cam = {
-    // Current smoothed camera
     pitch: 0.76, yaw: 0.785, dist: 40,
-    // Target camera
     tPitch: 0.76, tYaw: 0.785, tDist: 40,
     dragging: false, px: 0, py: 0
   };
@@ -384,7 +363,7 @@ if (!window.THREE) {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.08;
     container.appendChild(renderer.domElement);
 
     scene = new THREE.Scene();
@@ -393,24 +372,24 @@ if (!window.THREE) {
 
     camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 500);
 
-    // Warm ambient light & soft isometric sun light
-    var ambLight = new THREE.AmbientLight(0xfffdf7, 0.9);
+    // Warm, soft botanical illumination
+    var ambLight = new THREE.AmbientLight(0xfffdf7, 0.95);
     scene.add(ambLight);
 
-    var dirLight = new THREE.DirectionalLight(0xfff5e6, 1.4);
-    dirLight.position.set(30, 48, 26);
+    var hemiLight = new THREE.HemisphereLight(0xfff5ea, 0xd0c8b8, 0.4);
+    scene.add(hemiLight);
+
+    var dirLight = new THREE.DirectionalLight(0xfff5e6, 1.45);
+    dirLight.position.set(28, 48, 26);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = dirLight.shadow.mapSize.height = 2048;
-    dirLight.shadow.camera.left   = -24; dirLight.shadow.camera.right  = 24;
-    dirLight.shadow.camera.top    =  24; dirLight.shadow.camera.bottom = -24;
-    dirLight.shadow.camera.near   = 0.5; dirLight.shadow.camera.far    = 140;
+    dirLight.shadow.camera.left   = -22; dirLight.shadow.camera.right  = 22;
+    dirLight.shadow.camera.top    =  22; dirLight.shadow.camera.bottom = -22;
+    dirLight.shadow.camera.near   = 0.5; dirLight.shadow.camera.far    = 130;
     dirLight.shadow.bias = -0.0003;
     scene.add(dirLight);
 
-    // Groups
-    rootGroup = new THREE.Group();
-    scene.add(rootGroup);
-
+    rootGroup     = new THREE.Group(); scene.add(rootGroup);
     platformGroup = new THREE.Group(); rootGroup.add(platformGroup);
     qrGroup       = new THREE.Group(); rootGroup.add(qrGroup);
     treeGroup     = new THREE.Group(); rootGroup.add(treeGroup);
@@ -432,7 +411,7 @@ if (!window.THREE) {
       cam.tDist = Math.max(22, Math.min(65, cam.tDist + e.deltaY * 0.03));
     }, { passive: false });
 
-    // Touch controls
+    // Touch
     container.addEventListener('touchstart', function (e) {
       if (e.touches.length === 1) {
         cam.dragging = true; cam.px = e.touches[0].clientX; cam.py = e.touches[0].clientY;
@@ -446,9 +425,7 @@ if (!window.THREE) {
     }, { passive: true });
     window.addEventListener('touchend', function () { cam.dragging = false; });
 
-    // Click canvas / tree to toggle view
-    container.addEventListener('click', function (e) {
-      // If user barely moved cursor, treat as click toggle
+    container.addEventListener('click', function () {
       setQRMode(!state.qrMode);
     });
 
@@ -462,7 +439,6 @@ if (!window.THREE) {
     animate();
   }
 
-  // ── Helper: Clear Three.js group ──────────────────────────────────────────
   function clearGroup(g) {
     while (g.children.length) {
       var c = g.children[0];
@@ -475,7 +451,7 @@ if (!window.THREE) {
     }
   }
 
-  // ── Build Isometric Platform & Border Grass ───────────────────────────────
+  // ── Isometric Stone Platform ───────────────────────────────────────────────
   function buildPlatform(seasonCfg, qrSize) {
     var THREE = window.THREE;
     clearGroup(platformGroup);
@@ -484,7 +460,6 @@ if (!window.THREE) {
     var platSize = (qrSize + 4) * bs;
     var half = platSize / 2;
 
-    // Platform Base Slab (stone floor + dark stone rim)
     var slabGeo = new THREE.BoxGeometry(platSize, 1.2, platSize);
     var slabMat = new THREE.MeshStandardMaterial({
       color: seasonCfg.groundColor,
@@ -496,7 +471,6 @@ if (!window.THREE) {
     slab.receiveShadow = true;
     platformGroup.add(slab);
 
-    // Stone rim border
     var rimGeo = new THREE.BoxGeometry(platSize + 0.3, 0.4, platSize + 0.3);
     var rimMat = new THREE.MeshStandardMaterial({
       color: seasonCfg.groundEdge,
@@ -506,7 +480,7 @@ if (!window.THREE) {
     rim.position.y = -0.8;
     platformGroup.add(rim);
 
-    // Cute low-poly 3D grass tufts around the 4 borders
+    // 3D Grass clumps along borders
     var grassMat = new THREE.MeshStandardMaterial({
       color: seasonCfg.grassColor,
       roughness: 0.7,
@@ -514,7 +488,7 @@ if (!window.THREE) {
     });
     var rng = makeRng(1234);
 
-    function addGrassClump(gx, gz) {
+    function addGrass(gx, gz) {
       var clump = new THREE.Group();
       clump.position.set(gx, 0.01, gz);
       var blades = 3 + Math.floor(rng() * 3);
@@ -532,16 +506,16 @@ if (!window.THREE) {
 
     var edgeDist = half - 0.4;
     for (var x = -edgeDist; x <= edgeDist; x += 1.0) {
-      if (rng() > 0.25) addGrassClump(x, -edgeDist);
-      if (rng() > 0.25) addGrassClump(x,  edgeDist);
+      if (rng() > 0.25) addGrass(x, -edgeDist);
+      if (rng() > 0.25) addGrass(x,  edgeDist);
     }
     for (var z = -edgeDist; z <= edgeDist; z += 1.0) {
-      if (rng() > 0.25) addGrassClump(-edgeDist, z);
-      if (rng() > 0.25) addGrassClump( edgeDist, z);
+      if (rng() > 0.25) addGrass(-edgeDist, z);
+      if (rng() > 0.25) addGrass( edgeDist, z);
     }
   }
 
-  // ── Build Embedded QR Pavement Modules ────────────────────────────────────
+  // ── Pavement QR Code ───────────────────────────────────────────────────────
   function buildQRPavement(url, seasonCfg, dataColorHex) {
     var THREE = window.THREE;
     clearGroup(qrGroup);
@@ -554,7 +528,6 @@ if (!window.THREE) {
       var bs   = 0.54;
       var offset = (size * bs) / 2;
 
-      // Classify cells: finder patterns vs general data
       function isFinder(r, c) {
         if (r < 7 && c < 7) return true;
         if (r < 7 && c >= size - 7) return true;
@@ -562,10 +535,7 @@ if (!window.THREE) {
         return false;
       }
 
-      var finderCount = 0;
-      var dataCount   = 0;
-      var lightCount  = 0;
-
+      var finderCount = 0, dataCount = 0, lightCount = 0;
       for (var r = 0; r < size; r++) {
         for (var c = 0; c < size; c++) {
           if (qr.isDark(r, c)) {
@@ -577,37 +547,20 @@ if (!window.THREE) {
         }
       }
 
-      // Materials
       var blockH = 0.28;
       var geo = new THREE.BoxGeometry(bs * 0.95, blockH, bs * 0.95);
 
-      // Light pavement background tiles
-      var lightMat = new THREE.MeshStandardMaterial({
-        color: 0xf5f0e6,
-        roughness: 0.9
-      });
-      var lightMesh = new THREE.InstancedMesh(geo, lightMat, lightCount);
-      lightMesh.receiveShadow = true;
+      var lightMat  = new THREE.MeshStandardMaterial({ color: 0xf5f0e6, roughness: 0.9 });
+      var finderMat = new THREE.MeshStandardMaterial({ color: seasonCfg.finderColor, roughness: 0.65, flatShading: true });
+      var dataMat   = new THREE.MeshStandardMaterial({ color: dataColorHex, roughness: 0.65, flatShading: true });
 
-      // Finder pattern tiles (green in spring/summer, golden in autumn)
-      var finderMat = new THREE.MeshStandardMaterial({
-        color: seasonCfg.finderColor,
-        roughness: 0.65,
-        flatShading: true
-      });
+      var lightMesh  = new THREE.InstancedMesh(geo, lightMat, lightCount);
       var finderMesh = new THREE.InstancedMesh(geo, finderMat, finderCount);
-      finderMesh.castShadow = true;
-      finderMesh.receiveShadow = true;
+      var dataMesh   = new THREE.InstancedMesh(geo, dataMat, dataCount);
 
-      // Data tiles (leaf/palette color)
-      var dataMat = new THREE.MeshStandardMaterial({
-        color: dataColorHex,
-        roughness: 0.65,
-        flatShading: true
-      });
-      var dataMesh = new THREE.InstancedMesh(geo, dataMat, dataCount);
-      dataMesh.castShadow = true;
-      dataMesh.receiveShadow = true;
+      lightMesh.receiveShadow  = true;
+      finderMesh.castShadow    = true; finderMesh.receiveShadow = true;
+      dataMesh.castShadow      = true; dataMesh.receiveShadow   = true;
 
       var dummy = new THREE.Object3D();
       var fIdx = 0, dIdx = 0, lIdx = 0;
@@ -620,11 +573,8 @@ if (!window.THREE) {
           dummy.updateMatrix();
 
           if (qr.isDark(r, c)) {
-            if (isFinder(r, c)) {
-              finderMesh.setMatrixAt(fIdx++, dummy.matrix);
-            } else {
-              dataMesh.setMatrixAt(dIdx++, dummy.matrix);
-            }
+            if (isFinder(r, c)) finderMesh.setMatrixAt(fIdx++, dummy.matrix);
+            else dataMesh.setMatrixAt(dIdx++, dummy.matrix);
           } else {
             lightMesh.setMatrixAt(lIdx++, dummy.matrix);
           }
@@ -646,120 +596,169 @@ if (!window.THREE) {
     }
   }
 
-  // ── Build Aesthetic Procedural Low-Poly Tree ───────────────────────────────
-  function buildProceduralTree(seasonCfg, leafColorHex, seed) {
+  // ── Realistic Multi-Tier Organic Tree ──────────────────────────────────────
+  function buildRealisticTree(seasonCfg, leafColorHex, seed) {
     var THREE = window.THREE;
     clearGroup(treeGroup);
 
     var rng = makeRng(seed);
 
+    // Realistic Bark Material
     var trunkMat = new THREE.MeshStandardMaterial({
       color: seasonCfg.trunkColor,
-      roughness: 0.9,
-      flatShading: true
-    });
-    var leafMatA = new THREE.MeshStandardMaterial({
-      color: leafColorHex,
-      roughness: 0.6,
-      flatShading: true
-    });
-    var leafMatB = new THREE.MeshStandardMaterial({
-      color: seasonCfg.leafAlt,
-      roughness: 0.6,
+      roughness: 0.88,
+      metalness: 0.05,
       flatShading: true
     });
 
-    // Trunk root cylinder
-    var trunkH = 3.6;
-    var trunkGeo = new THREE.CylinderGeometry(0.48, 0.72, trunkH, 7);
-    var trunk = new THREE.Mesh(trunkGeo, trunkMat);
-    trunk.position.y = trunkH / 2;
-    trunk.castShadow = true;
-    trunk.receiveShadow = true;
-    treeGroup.add(trunk);
+    // 1. Organic Branching Trunk Network
+    var branches = [];
+    var leafClusterPositions = [];
 
-    // Recursive branches
-    function branch(ox, oy, oz, dx, dy, dz, len, rad, depth) {
+    function addBranch(ox, oy, oz, dx, dy, dz, len, rad, depth) {
       var mag = Math.sqrt(dx*dx + dy*dy + dz*dz);
       dx /= mag; dy /= mag; dz /= mag;
 
-      if (depth > 4 || rad < 0.05) {
-        // Volumetric foliage puff at tips
-        var puffCount = 2 + Math.floor(rng() * 3);
-        for (var p = 0; p < puffCount; p++) {
-          var pr = 0.55 + rng() * 0.45;
-          var pGeo = new THREE.DodecahedronGeometry(pr, 1);
-          var pMesh = new THREE.Mesh(pGeo, rng() > 0.4 ? leafMatA : leafMatB);
-          pMesh.position.set(
-            ox + (rng()-0.5) * 0.9,
-            oy + (rng()-0.5) * 0.6,
-            oz + (rng()-0.5) * 0.9
-          );
-          pMesh.castShadow = true;
-          treeGroup.add(pMesh);
-        }
-        return;
-      }
+      var ex = ox + dx * len;
+      var ey = oy + dy * len;
+      var ez = oz + dz * len;
 
-      var ex = ox + dx * len, ey = oy + dy * len, ez = oz + dz * len;
-      var mx = (ox+ex)/2,     my = (oy+ey)/2,     mz = (oz+ez)/2;
+      var mx = (ox + ex) / 2;
+      var my = (oy + ey) / 2;
+      var mz = (oz + ez) / 2;
 
-      var bGeo = new THREE.CylinderGeometry(rad * 0.72, rad, len, 6);
+      // Curved cylinder branch
+      var bGeo = new THREE.CylinderGeometry(rad * 0.72, rad, len, 7);
       var bMesh = new THREE.Mesh(bGeo, trunkMat);
       bMesh.position.set(mx, my, mz);
       bMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), new THREE.Vector3(dx,dy,dz).normalize());
       bMesh.castShadow = true;
+      bMesh.receiveShadow = true;
       treeGroup.add(bMesh);
 
-      // Mid-branch leaf cloud
-      if (depth >= 2) {
-        var clGeo = new THREE.DodecahedronGeometry(0.7 + rng() * 0.5, 1);
-        var clMesh = new THREE.Mesh(clGeo, rng() > 0.5 ? leafMatA : leafMatB);
-        clMesh.position.set(ex, ey, ez);
-        clMesh.castShadow = true;
-        treeGroup.add(clMesh);
+      // Collect endpoints for dense foliage clusters
+      if (depth >= 3 || len < 1.2) {
+        var numLeaves = 6 + Math.floor(rng() * 8);
+        for (var k = 0; k < numLeaves; k++) {
+          leafClusterPositions.push({
+            x: ex + (rng() - 0.5) * 1.4,
+            y: ey + (rng() - 0.4) * 1.1,
+            z: ez + (rng() - 0.5) * 1.4,
+            scale: 0.45 + rng() * 0.45,
+            tier: depth
+          });
+        }
       }
 
-      var kids = depth === 0 ? 4 : (rng() > 0.4 ? 3 : 2);
-      for (var i = 0; i < kids; i++) {
-        var spread = 0.4 + rng() * 0.35;
-        var rot    = (i / kids) * Math.PI * 2 + (rng()-0.5) * 0.5;
-        var ndx    = dx + Math.cos(rot) * spread;
-        var ndy    = dy + 0.2 + rng() * 0.3;
-        var ndz    = dz + Math.sin(rot) * spread;
-        branch(ex, ey, ez, ndx, ndy, ndz, len * (0.68 + rng()*0.08), rad * (0.62 + rng()*0.08), depth+1);
+      if (depth >= 4 || rad < 0.07) return;
+
+      var childCount = depth === 0 ? 4 : (rng() > 0.35 ? 3 : 2);
+      for (var i = 0; i < childCount; i++) {
+        var spread = 0.42 + rng() * 0.32;
+        var angle = (i / childCount) * Math.PI * 2 + (rng() - 0.5) * 0.6;
+        var ndx = dx + Math.cos(angle) * spread;
+        var ndy = dy + 0.18 + rng() * 0.28;
+        var ndz = dz + Math.sin(angle) * spread;
+        addBranch(ex, ey, ez, ndx, ndy, ndz, len * (0.68 + rng()*0.08), rad * (0.64 + rng()*0.06), depth + 1);
       }
     }
 
-    // Branch from top of trunk
-    branch(0, trunkH, 0, 0, 1, 0, 3.2, 0.48, 0);
+    // Root trunk
+    addBranch(0, 0, 0, 0, 1, 0, 3.4, 0.58, 0);
 
-    // Large main canopy crown
-    var crownGeo = new THREE.DodecahedronGeometry(2.4 + rng() * 0.5, 1);
-    var crown = new THREE.Mesh(crownGeo, leafMatA);
-    crown.position.set(0, trunkH + 3.8, 0);
-    crown.castShadow = true;
-    treeGroup.add(crown);
+    // Additional crown fill positions for volumetric dome
+    var crownCenterY = 6.2;
+    for (var c = 0; c < 260; c++) {
+      var theta = rng() * Math.PI * 2;
+      var phi   = rng() * Math.PI * 0.6;
+      var r     = 1.5 + rng() * 3.2;
+      leafClusterPositions.push({
+        x: Math.sin(phi) * Math.cos(theta) * r,
+        y: crownCenterY + Math.cos(phi) * (r * 0.75) + (rng() - 0.5) * 1.2,
+        z: Math.sin(phi) * Math.sin(theta) * r,
+        scale: 0.55 + rng() * 0.5,
+        tier: 5
+      });
+    }
+
+    // Drooping weeping outer boughs (characteristic of authentic Sakura / willow)
+    for (var w = 0; w < 120; w++) {
+      var wTheta = rng() * Math.PI * 2;
+      var wR = 3.2 + rng() * 1.8;
+      leafClusterPositions.push({
+        x: Math.cos(wTheta) * wR,
+        y: 3.8 + rng() * 2.2,
+        z: Math.sin(wTheta) * wR,
+        scale: 0.35 + rng() * 0.4,
+        tier: 6
+      });
+    }
+
+    // 2. High-Density Instanced Botanical Foliage
+    var totalClusters = leafClusterPositions.length;
+    var clusterGeo = new THREE.DodecahedronGeometry(0.7, 1);
+
+    var foliageMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff, // tinted via instanced colors
+      roughness: 0.52,
+      metalness: 0.02,
+      flatShading: true
+    });
+
+    var foliageMesh = new THREE.InstancedMesh(clusterGeo, foliageMat, totalClusters);
+    foliageMesh.castShadow = true;
+    foliageMesh.receiveShadow = true;
+
+    var dummy = new THREE.Object3D();
+    var baseCol = new THREE.Color(leafColorHex);
+    var altCol  = new THREE.Color(seasonCfg.leafAlt);
+    var highCol = new THREE.Color(seasonCfg.leafHighlight);
+
+    for (var idx = 0; idx < totalClusters; idx++) {
+      var lp = leafClusterPositions[idx];
+      dummy.position.set(lp.x, lp.y, lp.z);
+      dummy.rotation.set(rng() * Math.PI, rng() * Math.PI, rng() * Math.PI);
+      dummy.scale.set(lp.scale, lp.scale * (0.85 + rng() * 0.3), lp.scale);
+      dummy.updateMatrix();
+      foliageMesh.setMatrixAt(idx, dummy.matrix);
+
+      // Natural botanical color variation:
+      var blend = rng();
+      var cCol = new THREE.Color();
+      if (blend < 0.6) {
+        cCol.copy(baseCol).lerp(altCol, rng() * 0.45);
+      } else if (blend < 0.88) {
+        cCol.copy(altCol).lerp(baseCol, rng() * 0.3);
+      } else {
+        cCol.copy(highCol).lerp(altCol, 0.5);
+      }
+      foliageMesh.setColorAt(idx, cCol);
+    }
+
+    foliageMesh.instanceMatrix.needsUpdate = true;
+    if (foliageMesh.instanceColor) foliageMesh.instanceColor.needsUpdate = true;
+    treeGroup.add(foliageMesh);
   }
 
-  // ── Build Weather Particles (Petals / Leaves / Rain) ──────────────────────
+  // ── Weather Particles ──────────────────────────────────────────────────────
   function buildParticles(seasonCfg, particleColorHex) {
     var THREE = window.THREE;
     if (particleMesh) scene.remove(particleMesh);
 
-    var count = seasonCfg.weatherType === 'rain' ? 240 : 130;
+    var isRain = seasonCfg.weatherType === 'rain';
+    var count = isRain ? 280 : 160;
     var pos = new Float32Array(count * 3);
 
     for (var i = 0; i < count; i++) {
-      pos[i*3]     = (Math.random() - 0.5) * 30;
-      pos[i*3 + 1] = Math.random() * 22 + 1;
-      pos[i*3 + 2] = (Math.random() - 0.5) * 30;
+      pos[i*3]     = (Math.random() - 0.5) * 32;
+      pos[i*3 + 1] = Math.random() * 24 + 1;
+      pos[i*3 + 2] = (Math.random() - 0.5) * 32;
     }
 
     var geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
 
-    var size = seasonCfg.weatherType === 'rain' ? 0.22 : 0.45;
+    var size = isRain ? 0.24 : 0.42;
     var mat = new THREE.PointsMaterial({
       color: particleColorHex,
       size: size,
@@ -771,28 +770,20 @@ if (!window.THREE) {
     scene.add(particleMesh);
   }
 
-  // ── Rebuild Full Scene ─────────────────────────────────────────────────────
+  // ── Rebuild Scene ──────────────────────────────────────────────────────────
   function rebuildScene() {
     if (!scene) return;
     var s = SEASONS[state.season];
     var dataColorHex = (PALETTES[state.palette] && PALETTES[state.palette].hex) || s.leafColor;
 
-    // 1. QR embedded pavement
     var qrSize = buildQRPavement(state.url, s, dataColorHex);
-
-    // 2. Isometric stone platform
     buildPlatform(s, qrSize);
-
-    // 3. Tree
-    buildProceduralTree(s, dataColorHex, state.seed);
-
-    // 4. Weather particles
+    buildRealisticTree(s, dataColorHex, state.seed);
     buildParticles(s, s.particleColor);
 
     updateViewMode();
   }
 
-  // ── Toggle View: 3D Tree vs Top-Down QR Scanner ───────────────────────────
   function setQRMode(active) {
     state.qrMode = active;
     updateViewMode();
@@ -801,21 +792,19 @@ if (!window.THREE) {
   function updateViewMode() {
     var pill = document.getElementById('toggle-pill');
     if (state.qrMode) {
-      // Top-Down QR Code Scan View
-      cam.tPitch = 0.001; // directly overhead
-      cam.tYaw   = 0.0;   // aligned square with screen
-      cam.tDist  = 34;    // centered zoom
+      cam.tPitch = 0.001; // top-down
+      cam.tYaw   = 0.0;
+      cam.tDist  = 34;
       pill.textContent = 'Tap to see the tree';
     } else {
-      // 3D Isometric View
       cam.tPitch = 0.76;
-      cam.tYaw   = 0.785; // 45 degree isometric diamond angle
+      cam.tYaw   = 0.785; // isometric diamond
       cam.tDist  = 40;
       pill.textContent = 'Tap the tree to see QR code';
     }
   }
 
-  // ── Animation Loop ─────────────────────────────────────────────────────────
+  // ── Animate Loop with Natural Organic Wind ─────────────────────────────────
   function animate() {
     requestAnimationFrame(animate);
     var t = clock.getElapsedTime();
@@ -832,21 +821,24 @@ if (!window.THREE) {
     );
     camera.lookAt(0, 1.8, 0);
 
-    // Tree scale transition: shrink to 0 in QR mode, grow to 1 in 3D mode
-    if (treeGroup) {
-      var targetScale = state.qrMode ? 0.0001 : 1.0;
-      var curScale = treeGroup.scale.x;
-      var nextScale = curScale + (targetScale - curScale) * 0.12;
-      treeGroup.scale.set(nextScale, nextScale, nextScale);
-      treeGroup.visible = nextScale > 0.01;
+    // Smooth Tree Growth / Collapse Transition
+    var targetScale = state.qrMode ? 0.0001 : 1.0;
+    treeScale += (targetScale - treeScale) * 0.12;
 
-      // Gentle wind sway in 3D mode
-      if (!state.qrMode) {
-        treeGroup.rotation.y = Math.sin(t * 0.6) * 0.018;
+    if (treeGroup) {
+      treeGroup.scale.set(treeScale, treeScale, treeScale);
+      treeGroup.visible = treeScale > 0.01;
+
+      // Realistic Bending Wind Sway (not rigid rotation!)
+      if (!state.qrMode && treeScale > 0.8) {
+        var swayZ = (Math.sin(t * 1.1) * 0.014 + Math.sin(t * 2.4) * 0.006);
+        var swayX = (Math.cos(t * 0.85) * 0.012 + Math.cos(t * 1.9) * 0.005);
+        treeGroup.rotation.z = swayZ;
+        treeGroup.rotation.x = swayX;
       }
     }
 
-    // Weather particles animation
+    // Weather Particles Animation
     if (particleMesh) {
       var s = SEASONS[state.season];
       var pts = particleMesh.geometry.attributes.position.array;
@@ -855,18 +847,19 @@ if (!window.THREE) {
 
       for (var i = 0; i < n; i++) {
         if (isRain) {
-          pts[i*3 + 1] -= 0.22; // fast vertical rain
-          pts[i*3]     += 0.02; // slight wind tilt
+          pts[i*3 + 1] -= 0.28; // falling rain
+          pts[i*3]     += 0.025;
         } else {
-          pts[i*3]     += Math.sin(t * 0.5 + i * 1.3) * 0.012;
-          pts[i*3 + 1] -= 0.032 + Math.sin(t * 0.4 + i) * 0.008;
-          pts[i*3 + 2] += Math.cos(t * 0.5 + i * 1.7) * 0.012;
+          // Gentle floating petals / leaves drifting on wind vortex
+          pts[i*3]     += Math.sin(t * 0.7 + i * 1.2) * 0.016 + 0.006;
+          pts[i*3 + 1] -= 0.028 + Math.sin(t * 0.5 + i) * 0.006;
+          pts[i*3 + 2] += Math.cos(t * 0.6 + i * 1.5) * 0.014;
         }
 
         if (pts[i*3 + 1] < 0) {
-          pts[i*3]     = (Math.random() - 0.5) * 30;
+          pts[i*3]     = (Math.random() - 0.5) * 32;
           pts[i*3 + 1] = 18 + Math.random() * 6;
-          pts[i*3 + 2] = (Math.random() - 0.5) * 30;
+          pts[i*3 + 2] = (Math.random() - 0.5) * 32;
         }
       }
       particleMesh.geometry.attributes.position.needsUpdate = true;
@@ -875,7 +868,7 @@ if (!window.THREE) {
     renderer.render(scene, camera);
   }
 
-  // ── UI: Palette Swatches ───────────────────────────────────────────────────
+  // ── UI Listeners ───────────────────────────────────────────────────────────
   var paletteContainer = document.getElementById('palette-row');
   PALETTES.forEach(function (p, i) {
     var b = document.createElement('button');
@@ -892,7 +885,6 @@ if (!window.THREE) {
     paletteContainer.appendChild(b);
   });
 
-  // ── UI: Season Selector Buttons ────────────────────────────────────────────
   document.querySelectorAll('.season-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var sIdx = parseInt(btn.dataset.s);
@@ -904,12 +896,10 @@ if (!window.THREE) {
     });
   });
 
-  // ── UI: Toggle View Pill ───────────────────────────────────────────────────
   document.getElementById('toggle-pill').addEventListener('click', function () {
     setQRMode(!state.qrMode);
   });
 
-  // ── UI: URL Input & Share / Update Button ───────────────────────────────────
   var urlInput = document.getElementById('url-input');
   urlInput.value = state.url;
 
@@ -924,7 +914,6 @@ if (!window.THREE) {
     if (e.key === 'Enter') handleUrlUpdate();
   });
 
-  // ── UI: Share Modal ────────────────────────────────────────────────────────
   function getShareUrl() {
     try {
       var q = btoa(state.season + '' + state.palette + (state.url || ''));
@@ -955,7 +944,6 @@ if (!window.THREE) {
     });
   });
 
-  // ── UI: Ambient Breeze Audio ───────────────────────────────────────────────
   var audioCtx = null, audioSrc = null;
   document.getElementById('btn-sound').addEventListener('click', function () {
     var btn = this;
@@ -986,12 +974,10 @@ if (!window.THREE) {
     }
   });
 
-  // ── Info Modal / Brand Click ───────────────────────────────────────────────
   document.getElementById('info-btn').addEventListener('click', function () {
     alert("CruseQR Magic Tree\n\nTurn any URL into a living 3D procedural tree rooted in a scannable QR code pavement.\n\n• Tap the tree to switch to the flat top-down scanner\n• Pick Spring, Summer, or Autumn themes\n• Customize petal colors and share your unique tree!");
   });
 
-  // ── Wait for Three.js then initialize ──────────────────────────────────────
   function waitInit() {
     if (window.THREE && window.qrcode) {
       initThree();
