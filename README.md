@@ -1,9 +1,200 @@
 # CruseQR — Complete QR Code Creation & Management SaaS Platform
 
 > **Tagline:** Scan. Create. Connect.  
+> **Live Backend URL:** `https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech`  
 > **Inspiration:** Inspired by the design and capability standards of [ICQR](https://icqr.com/) and [ICQR Biolinks (tree.icqr.com)](https://tree.icqr.com/?q=MDBodHRwczovL2ljcXIuY29tLw).
 
-CruseQR is a complete, production-quality SaaS web application for creating, managing, tracking, and styling next-generation QR codes, artistic generative AI QR designs, multi-link Link-in-Bio pages, and digital business cards.
+CruseQR is a complete, production-quality SaaS web application and headless backend for creating, managing, tracking, and styling next-generation QR codes, artistic generative AI QR designs, multi-link Link-in-Bio pages, and digital business cards.
+
+---
+
+## 🌐 Live Platform & Endpoints
+
+| Resource | Public URL | Description |
+|---|---|---|
+| **Marketing Homepage & Sandbox** | `https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech` | Landing page with interactive live QR preview sandbox |
+| **Authentication** | `https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech/login` | 1-Click Login for Demo & Admin accounts |
+| **User Dashboard** | `https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech/dashboard` | Main analytics, campaigns & QR studio |
+| **AI QR Art Studio** | `https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech/dashboard/ai-art` | Generative diffusion synthesis studio |
+| **Link-in-Bio Page** | `https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech/bio/alexmorgan` | tree.icqr.com-inspired creator landing page |
+| **Digital Business Card** | `https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech/card/alex-morgan` | Executive vCard 3.0 contact card with .vcf download |
+| **Admin Console** | `https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech/admin` | System user directory & platform audit logs |
+| **Dynamic Redirection Node** | `https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech/r/:shortCode` | Sub-50ms redirect router with scan recording |
+
+---
+
+## 🔑 Backend API Authentication
+
+All API endpoints support cross-origin requests (**CORS `*`**) and can be called from any frontend, mobile app, or backend service using:
+
+- **HTTP Header:** `x-api-key: cqr_live_<USER_ID>`
+- **Or Authorization Header:** `Authorization: Bearer cqr_live_<USER_ID>`
+- **Or Session Cookie:** standard browser session from `/api/auth/login`
+
+> **Demo API Key:** `cqr_live_demo`
+
+---
+
+## 📡 Headless REST API Reference
+
+### 1. Stateless QR Render Microservice
+`POST /api/v1/render`  
+*Generate QR code SVG or Base64 Data URL on the fly without database storage.*
+
+**Request Body:**
+```json
+{
+  "content": "https://example.com",
+  "format": "svg", // "svg" | "dataUrl" | "rawSvg"
+  "design": {
+    "dotsColor": "#8B5CF6",
+    "dotsType": "rounded", // "rounded" | "dots" | "classy" | "square" | "extra-rounded" | "classy-rounded"
+    "cornersSquareType": "extra-rounded", // "extra-rounded" | "dot" | "square"
+    "cornersDotType": "dot",
+    "backgroundColor": "#FFFFFF",
+    "frame": "bottom-banner", // "none" | "bottom-banner" | "top-banner" | "badge" | "phone" | "stamp"
+    "frameText": "SCAN ME",
+    "frameColor": "#8B5CF6"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" ...</svg>",
+  "payload": "https://example.com"
+}
+```
+
+---
+
+### 2. Create Dynamic QR Code
+`POST /api/v1/qr`  
+*Headers:* `Content-Type: application/json`, `x-api-key: cqr_live_demo`
+
+**Request Body:**
+```json
+{
+  "title": "Summer Campaign",
+  "destinationUrl": "https://mybrand.com/summer-sale",
+  "qrType": "URL",
+  "isDynamic": true,
+  "designConfig": {
+    "dotsColor": "#8B5CF6",
+    "dotsType": "rounded",
+    "frame": "bottom-banner",
+    "frameText": "GET 20% OFF"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "qrCode": {
+    "id": "cm3...",
+    "title": "Summer Campaign",
+    "shortCode": "abc123x",
+    "shortUrl": "https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech/r/abc123x",
+    "destinationUrl": "https://mybrand.com/summer-sale",
+    "isDynamic": true,
+    "status": "ACTIVE",
+    "totalScans": 0
+  },
+  "svg": "<svg ...</svg>"
+}
+```
+
+---
+
+### 3. List All Dynamic QR Codes
+`GET /api/v1/qr`  
+*Headers:* `x-api-key: cqr_live_demo`
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 3,
+  "qrCodes": [
+    {
+      "id": "cm3...",
+      "title": "Summer Launch Page",
+      "shortCode": "summer26",
+      "shortUrl": "https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech/r/summer26",
+      "destinationUrl": "https://cruseqr.com/features",
+      "qrType": "URL",
+      "isDynamic": true,
+      "status": "ACTIVE",
+      "totalScans": 148,
+      "createdAt": "2026-11-05T08:23:16.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 4. Fetch Scan Analytics
+`GET /api/analytics?range=30d`  
+*Headers:* `x-api-key: cqr_live_demo`  
+*Query parameters:* `range`: `today` | `7d` | `30d` | `90d` | `all`
+
+**Response:**
+```json
+{
+  "totalScans": 148,
+  "uniqueScans": 112,
+  "scanTrends": [
+    { "date": "Oct 15", "scans": 12 },
+    { "date": "Oct 16", "scans": 18 }
+  ],
+  "deviceBreakdown": [
+    { "name": "Mobile", "value": 98, "color": "#8B5CF6" },
+    { "name": "Desktop", "value": 38, "color": "#06B6D4" },
+    { "name": "Tablet", "value": 12, "color": "#10B981" }
+  ],
+  "countryBreakdown": [
+    { "country": "United States", "count": 68, "percent": 46 },
+    { "country": "United Kingdom", "count": 34, "percent": 23 }
+  ],
+  "topQrCodes": [
+    { "id": "cm3...", "title": "Summer Launch Page", "periodScans": 148 }
+  ]
+}
+```
+
+---
+
+### 5. Generate AI QR Art
+`POST /api/ai-qr`  
+*Headers:* `Content-Type: application/json`, `x-api-key: cqr_live_demo`
+
+**Request Body:**
+```json
+{
+  "destinationUrl": "https://mybrand.com",
+  "prompt": "Cyberpunk neon city street with violet reflections",
+  "stylePresetId": "cyberpunk"
+}
+```
+
+**Response:**
+```json
+{
+  "generation": { "id": "cm3...", "scannabilityScore": 97.8, "status": "COMPLETED" },
+  "scannability": {
+    "score": 97.8,
+    "rating": "Excellent",
+    "isScannable": true,
+    "contrastRatio": 5.4
+  },
+  "svg": "<svg ...</svg>"
+}
+```
 
 ---
 
