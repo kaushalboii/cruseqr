@@ -884,3 +884,4 @@ ${qrcodeLib}
 
 fs.writeFileSync("/Users/kaushal/Downloads/cruseqr/gh-pages/index.html", html, "utf8");
 console.log("Successfully generated gh-pages/index.html!");
+
