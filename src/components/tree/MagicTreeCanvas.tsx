@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import * as THREE from "three";
 import QRCode from "qrcode";
 
-// ─── Query Format & URL Handling ─────────────────────────────────────────────
+// ─── Query Format & Dynamic URL Detection ───────────────────────────────────
 function getDefaultUrl(): string {
   if (typeof window !== "undefined" && window.location.origin && window.location.origin !== "null") {
     return window.location.origin + window.location.pathname;
@@ -55,203 +55,298 @@ function encodeQ(url: string, season: number, palette: number) {
   try { return btoa(`${season}${palette}${url}`); } catch { return ""; }
 }
 
-// ─── Seasons Config (Exact ICQR Palette) ──────────────────────────────────────
+// ─── Seasons Config ──────────────────────────────────────────────────────────
 const SEASONS = [
   {
-    id: "spring", name: "Spring",
-    groundColor: 0xe6e0d4, groundEdge: 0xb5ada0,
-    trunkColor: 0x543c2c,
-    leafColor: 0xf2a4b8, leafAlt: 0xf8bcd0,
-    particleColor: 0xf7b7cb,
-    grassColor: 0x6bb343, finderColor: 0x4da832,
-    weatherType: "petals"
+    id: "spring",
+    name: "Spring",
+    skyColor: 0xfaf4ec,
+    groundColor: 0xeae3d8,
+    groundEdge: 0xd8cebf,
+    grassColor: 0x76a035,
+    trunkColor: 0x4a2e1b,
+    leafColor: 0xf48fb1,
+    leafAlt: 0xffccd5,
+    leafHighlight: 0xffffff,
+    finderColor: 0x4d8c28,
+    particleColor: 0xffb7c5,
+    weatherType: "blossom"
   },
   {
-    id: "summer", name: "Summer",
-    groundColor: 0xe2ded2, groundEdge: 0xa8a194,
-    trunkColor: 0x483222,
-    leafColor: 0x5fa838, leafAlt: 0x76c24c,
-    particleColor: 0x70be46,
-    grassColor: 0x458b22, finderColor: 0x3d821e,
+    id: "summer",
+    name: "Summer",
+    skyColor: 0xf7f5eb,
+    groundColor: 0xe8e2d4,
+    groundEdge: 0xd6cbb8,
+    grassColor: 0x4e8d24,
+    trunkColor: 0x3e2716,
+    leafColor: 0x4caf50,
+    leafAlt: 0x81c784,
+    leafHighlight: 0xc8e6c9,
+    finderColor: 0x2e7d32,
+    particleColor: 0x81c784,
     weatherType: "leaves"
   },
   {
-    id: "autumn", name: "Autumn",
-    groundColor: 0xe4ded3, groundEdge: 0xa59e92,
-    trunkColor: 0x4c3321,
-    leafColor: 0xf09c2a, leafAlt: 0xf6b948,
-    particleColor: 0x948e84,
-    grassColor: 0xd49b28, finderColor: 0xc48618,
-    weatherType: "rain"
+    id: "autumn",
+    name: "Autumn",
+    skyColor: 0xf7f0e6,
+    groundColor: 0xe5dcce,
+    groundEdge: 0xd2c4b0,
+    grassColor: 0x9b8332,
+    trunkColor: 0x432818,
+    leafColor: 0xd84315,
+    leafAlt: 0xf4511e,
+    leafHighlight: 0xffb74d,
+    finderColor: 0xbf360c,
+    particleColor: 0xef6c00,
+    weatherType: "autumnLeaves"
   }
 ];
 
 const PALETTES = [
-  { name: "Sakura Pink",  hex: 0xf2a4b8, color: "#f2a4b8" },
-  { name: "Purple",       hex: 0x9b6bcf, color: "#9b6bcf" },
-  { name: "Berry Red",    hex: 0xe54b4b, color: "#e54b4b" },
-  { name: "Golden Amber", hex: 0xf0a500, color: "#f0a500" },
-  { name: "Sky Blue",     hex: 0x3b82f6, color: "#3b82f6" },
-  { name: "Slate Teal",   hex: 0x2d7a6b, color: "#2d7a6b" }
+  { name: "Sakura Pink", color: "#f48fb1", hex: 0xf48fb1 },
+  { name: "Wisteria Lavender", color: "#b39ddb", hex: 0xb39ddb },
+  { name: "Crimson Maple", color: "#e57373", hex: 0xe57373 },
+  { name: "Golden Gingko", color: "#ffb74d", hex: 0xffb74d },
+  { name: "Cerulean Sky", color: "#64b5f6", hex: 0x64b5f6 },
+  { name: "Emerald Pine", color: "#81c784", hex: 0x81c784 }
 ];
 
 function makeRng(seed: number) {
-  let s = seed >>> 0;
-  return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
 }
 
 export default function MagicTreeCanvas() {
   const searchParams = useSearchParams();
   const qParam = searchParams.get("q");
-  const init = useMemo(() => parseQ(qParam), [qParam]);
 
-  const [url, setUrl]           = useState(init.url);
-  const [urlInput, setUrlInput] = useState(init.url);
-  const [season, setSeason]     = useState(init.season);
-  const [palette, setPalette]   = useState(init.palette);
-  const [qrMode, setQrMode]     = useState(false); // false = 3D tree, true = flat top-down scanner
-  const [muted, setMuted]       = useState(true);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [copied, setCopied]     = useState(false);
+  const initial = useMemo(() => parseQ(qParam), [qParam]);
 
-  const containerRef  = useRef<HTMLDivElement>(null);
-  const sceneRef      = useRef<THREE.Scene | null>(null);
-  const camRef        = useRef<THREE.PerspectiveCamera | null>(null);
-  const rendRef       = useRef<THREE.WebGLRenderer | null>(null);
-  const platGroupRef  = useRef<THREE.Group | null>(null);
-  const qrGroupRef    = useRef<THREE.Group | null>(null);
-  const treeGroupRef  = useRef<THREE.Group | null>(null);
-  const particleRef   = useRef<THREE.Points | null>(null);
-  const clockRef      = useRef(new THREE.Clock());
-  const rafRef        = useRef<number>(0);
-  const audioCtxRef   = useRef<AudioContext | null>(null);
-  const audioSrcRef   = useRef<AudioBufferSourceNode | null>(null);
+  const [url, setUrl] = useState<string>(initial.url);
+  const [urlInput, setUrlInput] = useState<string>(initial.url);
+  const [season, setSeason] = useState<number>(initial.season);
+  const [palette, setPalette] = useState<number>(initial.palette);
+  const [qrMode, setQrMode] = useState<boolean>(false);
+  const [shareOpen, setShareOpen] = useState<boolean>(false);
+  const [infoOpen, setInfoOpen] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(false);
 
-  // Smooth camera orbit
+  const containerRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const rootGroupRef = useRef<THREE.Group | null>(null);
+  const platGroupRef = useRef<THREE.Group | null>(null);
+  const qrGroupRef = useRef<THREE.Group | null>(null);
+  const treeGroupRef = useRef<THREE.Group | null>(null);
+  const fallenPetalsRef = useRef<THREE.Group | null>(null);
+  const particleRef = useRef<THREE.Points | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const rafRef = useRef<number>(0);
+
   const cam = useRef({
-    pitch: 0.76, yaw: 0.785, dist: 40,
-    tPitch: 0.76, tYaw: 0.785, tDist: 40,
+    pitch: 0.78, yaw: 0.785, dist: 38,
+    tPitch: 0.78, tYaw: 0.785, tDist: 38,
     dragging: false, px: 0, py: 0
   });
+  const treeScaleRef = useRef(1.0);
+
+  // ── Web Audio Nature Sound Chime ───────────────────────────────────────────
+  const playOrganicChime = useCallback(() => {
+    if (!soundEnabled) return;
+    try {
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") ctx.resume();
+
+      const now = ctx.currentTime;
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      const note = notes[Math.floor(Math.random() * notes.length)];
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(note, now);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.exponentialRampToValueAtTime(0.12, now + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 1.25);
+    } catch {}
+  }, [soundEnabled]);
 
   // ── Init Three.js Scene ────────────────────────────────────────────────────
   useEffect(() => {
-    if (!containerRef.current) return;
     const el = containerRef.current;
+    if (!el) return;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const s = SEASONS[season];
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(s.skyColor);
+    scene.fog = new THREE.FogExp2(s.skyColor, 0.012);
+    sceneRef.current = scene;
+
+    const camera = new THREE.PerspectiveCamera(38, el.clientWidth / el.clientHeight, 0.5, 200);
+    cameraRef.current = camera;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     renderer.setSize(el.clientWidth, el.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
-    rendRef.current = renderer;
+    renderer.toneMappingExposure = 1.08;
+    rendererRef.current = renderer;
     el.appendChild(renderer.domElement);
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf6f1e7);
-    sceneRef.current = scene;
+    const clock = new THREE.Clock();
 
-    const camera = new THREE.PerspectiveCamera(40, el.clientWidth / el.clientHeight, 0.1, 500);
-    camRef.current = camera;
+    // Natural Sun & Atmosphere Lighting
+    const amb = new THREE.AmbientLight(0xfffdf7, 0.95);
+    scene.add(amb);
 
-    // Lights
-    scene.add(new THREE.AmbientLight(0xfffdf7, 0.9));
-    const sun = new THREE.DirectionalLight(0xfff5e6, 1.4);
-    sun.position.set(30, 48, 26);
+    const hemi = new THREE.HemisphereLight(0xfff7ed, 0xdcd5c5, 0.5);
+    scene.add(hemi);
+
+    const sun = new THREE.DirectionalLight(0xfff5e6, 1.55);
+    sun.position.set(24, 46, 22);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
-    sun.shadow.camera.left = -24; sun.shadow.camera.right = 24;
-    sun.shadow.camera.top = 24;   sun.shadow.camera.bottom = -24;
-    sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 140;
-    sun.shadow.bias = -0.0003;
+    sun.shadow.mapSize.width = sun.shadow.mapSize.height = 2048;
+    sun.shadow.camera.left   = -24; sun.shadow.camera.right  = 24;
+    sun.shadow.camera.top    =  24; sun.shadow.camera.bottom = -24;
+    sun.shadow.camera.near   = 0.5; sun.shadow.camera.far    = 140;
+    sun.shadow.bias = -0.0002;
     scene.add(sun);
 
-    // Groups
-    const platGroup = new THREE.Group(); scene.add(platGroup); platGroupRef.current = platGroup;
-    const qrGroup   = new THREE.Group(); scene.add(qrGroup);   qrGroupRef.current   = qrGroup;
-    const treeGroup = new THREE.Group(); scene.add(treeGroup); treeGroupRef.current = treeGroup;
+    const rootGroup = new THREE.Group(); scene.add(rootGroup);
+    const platGroup = new THREE.Group(); rootGroup.add(platGroup);
+    const qrGroup   = new THREE.Group(); rootGroup.add(qrGroup);
+    const treeGroup = new THREE.Group(); rootGroup.add(treeGroup);
+    const fallenPetals = new THREE.Group(); rootGroup.add(fallenPetals);
 
-    // Orbit controls
-    const c = cam.current;
-    const onDown = (e: MouseEvent) => { c.dragging = true; c.px = e.clientX; c.py = e.clientY; };
-    const onMove = (e: MouseEvent) => {
-      if (!c.dragging) return;
-      c.tYaw   -= (e.clientX - c.px) * 0.007;
-      c.tPitch  = Math.max(0.18, Math.min(1.4, c.tPitch + (e.clientY - c.py) * 0.007));
-      c.px = e.clientX; c.py = e.clientY;
+    rootGroupRef.current = rootGroup;
+    platGroupRef.current = platGroup;
+    qrGroupRef.current   = qrGroup;
+    treeGroupRef.current = treeGroup;
+    fallenPetalsRef.current = fallenPetals;
+
+    // Controls
+    const onDown = (e: MouseEvent) => {
+      cam.current.dragging = true;
+      cam.current.px = e.clientX;
+      cam.current.py = e.clientY;
     };
-    const onUp = () => { c.dragging = false; };
+    const onMove = (e: MouseEvent) => {
+      if (!cam.current.dragging || qrMode) return;
+      cam.current.tYaw -= (e.clientX - cam.current.px) * 0.0065;
+      cam.current.tPitch = Math.max(0.15, Math.min(1.4, cam.current.tPitch + (e.clientY - cam.current.py) * 0.0065));
+      cam.current.px = e.clientX;
+      cam.current.py = e.clientY;
+    };
+    const onUp = () => { cam.current.dragging = false; };
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      c.tDist = Math.max(22, Math.min(65, c.tDist + e.deltaY * 0.03));
+      if (qrMode) return;
+      cam.current.tDist = Math.max(20, Math.min(65, cam.current.tDist + e.deltaY * 0.035));
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        cam.current.dragging = true;
+        cam.current.px = e.touches[0].clientX;
+        cam.current.py = e.touches[0].clientY;
+      }
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!cam.current.dragging || e.touches.length !== 1 || qrMode) return;
+      cam.current.tYaw -= (e.touches[0].clientX - cam.current.px) * 0.0085;
+      cam.current.tPitch = Math.max(0.15, Math.min(1.4, cam.current.tPitch + (e.touches[0].clientY - cam.current.py) * 0.0085));
+      cam.current.px = e.touches[0].clientX;
+      cam.current.py = e.touches[0].clientY;
+    };
+
+    const onResize = () => {
+      if (!el || !camera || !renderer) return;
+      camera.aspect = el.clientWidth / el.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(el.clientWidth, el.clientHeight);
     };
 
     el.addEventListener("mousedown", onDown);
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
     el.addEventListener("wheel", onWheel, { passive: false });
-
-    // Touch
-    const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 1) { c.dragging = true; c.px = e.touches[0].clientX; c.py = e.touches[0].clientY; }
-    };
-    const onTouchMove = (e: TouchEvent) => {
-      if (!c.dragging || e.touches.length !== 1) return;
-      c.tYaw   -= (e.touches[0].clientX - c.px) * 0.009;
-      c.tPitch  = Math.max(0.18, Math.min(1.4, c.tPitch + (e.touches[0].clientY - c.py) * 0.009));
-      c.px = e.touches[0].clientX; c.py = e.touches[0].clientY;
-    };
     el.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchmove", onTouchMove, { passive: true });
     window.addEventListener("touchend", onUp);
-
-    const onResize = () => {
-      if (!containerRef.current) return;
-      const w = containerRef.current.clientWidth, h = containerRef.current.clientHeight;
-      camera.aspect = w / h; camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    };
     window.addEventListener("resize", onResize);
 
-    // Animation Loop
+    // ── Animation Loop ───────────────────────────────────────────────────────
     const animate = () => {
       rafRef.current = requestAnimationFrame(animate);
-      const t = clockRef.current.getElapsedTime();
+      const t = clock.getElapsedTime();
+      const c = cam.current;
 
-      // Smooth camera lerp
-      c.pitch += (c.tPitch - c.pitch) * 0.09;
-      c.yaw   += (c.tYaw   - c.yaw)   * 0.09;
-      c.dist  += (c.tDist  - c.dist)  * 0.09;
+      c.pitch += (c.tPitch - c.pitch) * 0.085;
+      c.yaw   += (c.tYaw   - c.yaw)   * 0.085;
+      c.dist  += (c.tDist  - c.dist)  * 0.085;
 
       camera.position.set(
         c.dist * Math.sin(c.pitch) * Math.sin(c.yaw),
         c.dist * Math.cos(c.pitch),
         c.dist * Math.sin(c.pitch) * Math.cos(c.yaw)
       );
-      camera.lookAt(0, 1.8, 0);
+      camera.lookAt(0, 1.6, 0);
 
-      // Animate particles
+      // Smooth Botanical Tree Transition
+      const targetScale = qrMode ? 0.0001 : 1.0;
+      treeScaleRef.current += (targetScale - treeScaleRef.current) * 0.12;
+
+      if (treeGroupRef.current) {
+        treeGroupRef.current.scale.set(treeScaleRef.current, treeScaleRef.current, treeScaleRef.current);
+        treeGroupRef.current.visible = treeScaleRef.current > 0.01;
+
+        if (!qrMode && treeScaleRef.current > 0.75) {
+          const swayZ = Math.sin(t * 1.05) * 0.012 + Math.sin(t * 2.3) * 0.005;
+          const swayX = Math.cos(t * 0.8) * 0.01 + Math.cos(t * 1.8) * 0.004;
+          treeGroupRef.current.rotation.z = swayZ;
+          treeGroupRef.current.rotation.x = swayX;
+        }
+      }
+
+      if (fallenPetalsRef.current) {
+        fallenPetalsRef.current.visible = !qrMode;
+      }
+
+      // Dynamic Weather Particles Animation
       if (particleRef.current) {
         const pts = particleRef.current.geometry.attributes.position.array as Float32Array;
         const n = pts.length / 3;
         for (let i = 0; i < n; i++) {
-          pts[i * 3]     += Math.sin(t * 0.5 + i * 1.3) * 0.012;
-          pts[i * 3 + 1] -= 0.032 + Math.sin(t * 0.4 + i) * 0.008;
-          pts[i * 3 + 2] += Math.cos(t * 0.5 + i * 1.7) * 0.012;
+          pts[i * 3]     += Math.sin(t * 0.75 + i * 1.1) * 0.018 + 0.008;
+          pts[i * 3 + 1] -= 0.026 + Math.sin(t * 0.6 + i) * 0.006;
+          pts[i * 3 + 2] += Math.cos(t * 0.65 + i * 1.4) * 0.016;
+
           if (pts[i * 3 + 1] < 0) {
-            pts[i * 3]     = (Math.random() - 0.5) * 30;
-            pts[i * 3 + 1] = 18 + Math.random() * 6;
-            pts[i * 3 + 2] = (Math.random() - 0.5) * 30;
+            pts[i * 3]     = (Math.random() - 0.5) * 32;
+            pts[i * 3 + 1] = 20 + Math.random() * 6;
+            pts[i * 3 + 2] = (Math.random() - 0.5) * 32;
           }
         }
         particleRef.current.geometry.attributes.position.needsUpdate = true;
-      }
-
-      // Tree sway
-      if (treeGroupRef.current && treeGroupRef.current.visible) {
-        treeGroupRef.current.rotation.y = Math.sin(t * 0.6) * 0.018;
       }
 
       renderer.render(scene, camera);
@@ -262,8 +357,11 @@ export default function MagicTreeCanvas() {
       cancelAnimationFrame(rafRef.current);
       renderer.dispose();
       el.removeChild(renderer.domElement);
+      el.removeEventListener("mousedown", onDown);
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("touchend", onUp);
       window.removeEventListener("resize", onResize);
@@ -276,12 +374,15 @@ export default function MagicTreeCanvas() {
     const platGroup = platGroupRef.current;
     const qrGroup = qrGroupRef.current;
     const treeGroup = treeGroupRef.current;
-    if (!scene || !platGroup || !qrGroup || !treeGroup) return;
+    const fallenGroup = fallenPetalsRef.current;
+    if (!scene || !platGroup || !qrGroup || !treeGroup || !fallenGroup) return;
 
     const s = SEASONS[season];
     const dataColorHex = PALETTES[palette]?.hex ?? s.leafColor;
 
-    // Helper: Clear Group
+    scene.background = new THREE.Color(s.skyColor);
+    if (scene.fog) (scene.fog as THREE.FogExp2).color.set(s.skyColor);
+
     const clearGroup = (g: THREE.Group) => {
       while (g.children.length > 0) {
         const ch = g.children[0] as THREE.Mesh;
@@ -294,7 +395,7 @@ export default function MagicTreeCanvas() {
       }
     };
 
-    // 1. Build QR Pavement
+    // 1. Build QR Pavement Mosaic
     clearGroup(qrGroup);
     let qrSize = 29;
     try {
@@ -324,15 +425,19 @@ export default function MagicTreeCanvas() {
       }
 
       const blockH = 0.28;
-      const geo = new THREE.BoxGeometry(bs * 0.95, blockH, bs * 0.95);
+      const geo = new THREE.BoxGeometry(bs * 0.94, blockH, bs * 0.94);
 
-      const lightMat  = new THREE.MeshStandardMaterial({ color: 0xf5f0e6, roughness: 0.9 });
-      const finderMat = new THREE.MeshStandardMaterial({ color: s.finderColor, roughness: 0.65, flatShading: true });
-      const dataMat   = new THREE.MeshStandardMaterial({ color: dataColorHex, roughness: 0.65, flatShading: true });
+      const lightMat  = new THREE.MeshStandardMaterial({ color: 0xf5f1e8, roughness: 0.92 });
+      const finderMat = new THREE.MeshStandardMaterial({ color: s.finderColor, roughness: 0.55, flatShading: true });
+      const dataMat   = new THREE.MeshStandardMaterial({ color: dataColorHex, roughness: 0.55, flatShading: true });
 
       const lightMesh  = new THREE.InstancedMesh(geo, lightMat, lightCount);
       const finderMesh = new THREE.InstancedMesh(geo, finderMat, finderCount);
       const dataMesh   = new THREE.InstancedMesh(geo, dataMat, dataCount);
+
+      lightMesh.receiveShadow = true;
+      finderMesh.castShadow   = true; finderMesh.receiveShadow = true;
+      dataMesh.castShadow     = true; dataMesh.receiveShadow   = true;
 
       const dummy = new THREE.Object3D();
       let fIdx = 0, dIdx = 0, lIdx = 0;
@@ -353,137 +458,271 @@ export default function MagicTreeCanvas() {
         }
       }
 
-      lightMesh.instanceMatrix.needsUpdate = true;
+      lightMesh.instanceMatrix.needsUpdate  = true;
       finderMesh.instanceMatrix.needsUpdate = true;
-      dataMesh.instanceMatrix.needsUpdate = true;
+      dataMesh.instanceMatrix.needsUpdate   = true;
 
       qrGroup.add(lightMesh);
       qrGroup.add(finderMesh);
       qrGroup.add(dataMesh);
     } catch {}
 
-    // 2. Build Platform & Grass
+    // 2. Build Sculpted Platform with Beveled Edge & Wildflowers
     clearGroup(platGroup);
     const bs = 0.54;
     const platSize = (qrSize + 4) * bs;
     const half = platSize / 2;
 
-    const slabGeo = new THREE.BoxGeometry(platSize, 1.2, platSize);
-    const slabMat = new THREE.MeshStandardMaterial({ color: s.groundColor, roughness: 0.88 });
+    const slabGeo = new THREE.BoxGeometry(platSize, 1.25, platSize);
+    const slabMat = new THREE.MeshStandardMaterial({ color: s.groundColor, roughness: 0.85, metalness: 0.03 });
     const slab = new THREE.Mesh(slabGeo, slabMat);
-    slab.position.y = -0.6;
+    slab.position.y = -0.625;
+    slab.receiveShadow = true;
     platGroup.add(slab);
 
-    const rimGeo = new THREE.BoxGeometry(platSize + 0.3, 0.4, platSize + 0.3);
-    const rimMat = new THREE.MeshStandardMaterial({ color: s.groundEdge, roughness: 0.95 });
-    const rim = new THREE.Mesh(rimGeo, rimMat);
-    rim.position.y = -0.8;
-    platGroup.add(rim);
+    const baseGeo = new THREE.BoxGeometry(platSize + 0.45, 0.4, platSize + 0.45);
+    const baseMat = new THREE.MeshStandardMaterial({ color: s.groundEdge, roughness: 0.94 });
+    const base = new THREE.Mesh(baseGeo, baseMat);
+    base.position.y = -0.85;
+    base.receiveShadow = true;
+    platGroup.add(base);
 
-    // Perimeter grass
-    const grassMat = new THREE.MeshStandardMaterial({ color: s.grassColor, roughness: 0.7, flatShading: true });
-    const rng = makeRng(1234);
-    const edgeDist = half - 0.4;
+    const grassMat = new THREE.MeshStandardMaterial({ color: s.grassColor, roughness: 0.68, flatShading: true });
+    const flowerMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
+    const rng = makeRng(8821);
 
-    const addGrass = (gx: number, gz: number) => {
+    const addGrassClump = (gx: number, gz: number) => {
       const clump = new THREE.Group();
       clump.position.set(gx, 0.01, gz);
-      const blades = 3 + Math.floor(rng() * 3);
+      const blades = 4 + Math.floor(rng() * 4);
       for (let b = 0; b < blades; b++) {
-        const h = 0.45 + rng() * 0.55;
-        const bladeGeo = new THREE.ConeGeometry(0.08 + rng() * 0.05, h, 4);
-        const bladeMesh = new THREE.Mesh(bladeGeo, grassMat);
-        bladeMesh.position.set((rng()-0.5)*0.25, h/2, (rng()-0.5)*0.25);
-        bladeMesh.rotation.z = (rng()-0.5)*0.4;
-        bladeMesh.rotation.x = (rng()-0.5)*0.4;
-        clump.add(bladeMesh);
+        const h = 0.4 + rng() * 0.55;
+        const bladeGeo = new THREE.ConeGeometry(0.06 + rng() * 0.04, h, 4);
+        const blade = new THREE.Mesh(bladeGeo, grassMat);
+        blade.position.set((rng()-0.5)*0.22, h/2, (rng()-0.5)*0.22);
+        blade.rotation.z = (rng()-0.5)*0.45;
+        blade.rotation.x = (rng()-0.5)*0.45;
+        clump.add(blade);
+      }
+      if (rng() > 0.6) {
+        const flGeo = new THREE.SphereGeometry(0.08, 6, 6);
+        const fl = new THREE.Mesh(flGeo, flowerMat);
+        fl.position.set((rng()-0.5)*0.18, 0.48, (rng()-0.5)*0.18);
+        clump.add(fl);
       }
       platGroup.add(clump);
     };
 
-    for (let x = -edgeDist; x <= edgeDist; x += 1.0) {
-      if (rng() > 0.25) addGrass(x, -edgeDist);
-      if (rng() > 0.25) addGrass(x,  edgeDist);
+    const edgeDist = half - 0.45;
+    for (let x = -edgeDist; x <= edgeDist; x += 0.95) {
+      if (rng() > 0.2) addGrassClump(x, -edgeDist);
+      if (rng() > 0.2) addGrassClump(x,  edgeDist);
     }
-    for (let z = -edgeDist; z <= edgeDist; z += 1.0) {
-      if (rng() > 0.25) addGrass(-edgeDist, z);
-      if (rng() > 0.25) addGrass( edgeDist, z);
+    for (let z = -edgeDist; z <= edgeDist; z += 0.95) {
+      if (rng() > 0.2) addGrassClump(-edgeDist, z);
+      if (rng() > 0.2) addGrassClump( edgeDist, z);
     }
 
-    // 3. Build Procedural Tree
+    // 3. Build Hyper-Realistic Botanical Tree
     clearGroup(treeGroup);
-    const trunkMat = new THREE.MeshStandardMaterial({ color: s.trunkColor, roughness: 0.9, flatShading: true });
-    const leafMatA = new THREE.MeshStandardMaterial({ color: dataColorHex, roughness: 0.6, flatShading: true });
-    const leafMatB = new THREE.MeshStandardMaterial({ color: s.leafAlt, roughness: 0.6, flatShading: true });
+    clearGroup(fallenGroup);
 
-    const trunkH = 3.6;
-    const trunkGeo = new THREE.CylinderGeometry(0.48, 0.72, trunkH, 7);
-    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-    trunk.position.y = trunkH / 2;
-    treeGroup.add(trunk);
+    const treeRng = makeRng(1337);
+    const barkMat = new THREE.MeshStandardMaterial({
+      color: s.trunkColor,
+      roughness: 0.88,
+      metalness: 0.05,
+      flatShading: true
+    });
 
-    const branch = (ox: number, oy: number, oz: number, dx: number, dy: number, dz: number, len: number, rad: number, depth: number) => {
+    const leafClusterPositions: { x: number; y: number; z: number; scale: number; tier: number }[] = [];
+
+    // Root buttresses
+    const numRoots = 5;
+    for (let ri = 0; ri < numRoots; ri++) {
+      const rAngle = (ri / numRoots) * Math.PI * 2 + (treeRng() - 0.5) * 0.4;
+      const rLen = 1.1 + treeRng() * 0.5;
+      const rootGeo = new THREE.CylinderGeometry(0.18, 0.38, rLen, 6);
+      const rootMesh = new THREE.Mesh(rootGeo, barkMat);
+      rootMesh.position.set(Math.cos(rAngle) * (rLen * 0.38), 0.18, Math.sin(rAngle) * (rLen * 0.38));
+      rootMesh.rotation.y = -rAngle;
+      rootMesh.rotation.z = 0.55 + treeRng() * 0.15;
+      rootMesh.castShadow = true; rootMesh.receiveShadow = true;
+      treeGroup.add(rootMesh);
+    }
+
+    // Segmented curved trunk
+    const trunkPoints = [
+      { x: 0.00, y: 0.00, z: 0.00, r: 0.62 },
+      { x: 0.12, y: 0.95, z: 0.08, r: 0.52 },
+      { x: -0.08, y: 1.90, z: 0.14, r: 0.44 },
+      { x: 0.06, y: 2.85, z: -0.06, r: 0.38 },
+      { x: 0.00, y: 3.80, z: 0.00, r: 0.32 }
+    ];
+
+    for (let si = 0; si < trunkPoints.length - 1; si++) {
+      const p1 = trunkPoints[si];
+      const p2 = trunkPoints[si + 1];
+      const segLen = Math.sqrt(Math.pow(p2.x-p1.x,2) + Math.pow(p2.y-p1.y,2) + Math.pow(p2.z-p1.z,2));
+      const segGeo = new THREE.CylinderGeometry(p2.r, p1.r, segLen, 8);
+      const segMesh = new THREE.Mesh(segGeo, barkMat);
+      segMesh.position.set((p1.x + p2.x)/2, (p1.y + p2.y)/2, (p1.z + p2.z)/2);
+
+      const dir = new THREE.Vector3(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z).normalize();
+      segMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
+      segMesh.castShadow = true; segMesh.receiveShadow = true;
+      treeGroup.add(segMesh);
+    }
+
+    // Branching scaffold
+    const addBough = (ox: number, oy: number, oz: number, dx: number, dy: number, dz: number, len: number, rad: number, depth: number) => {
       const mag = Math.sqrt(dx*dx + dy*dy + dz*dz);
       dx /= mag; dy /= mag; dz /= mag;
 
-      if (depth > 4 || rad < 0.05) {
-        const puffCount = 2 + Math.floor(rng() * 3);
-        for (let p = 0; p < puffCount; p++) {
-          const pr = 0.55 + rng() * 0.45;
-          const pGeo = new THREE.DodecahedronGeometry(pr, 1);
-          const pMesh = new THREE.Mesh(pGeo, rng() > 0.4 ? leafMatA : leafMatB);
-          pMesh.position.set(ox + (rng()-0.5)*0.9, oy + (rng()-0.5)*0.6, oz + (rng()-0.5)*0.9);
-          treeGroup.add(pMesh);
-        }
-        return;
-      }
-
       const ex = ox + dx * len, ey = oy + dy * len, ez = oz + dz * len;
-      const mx = (ox+ex)/2,     my = (oy+ey)/2,     mz = (oz+ez)/2;
 
       const bGeo = new THREE.CylinderGeometry(rad * 0.72, rad, len, 6);
-      const bMesh = new THREE.Mesh(bGeo, trunkMat);
-      bMesh.position.set(mx, my, mz);
+      const bMesh = new THREE.Mesh(bGeo, barkMat);
+      bMesh.position.set((ox + ex)/2, (oy + ey)/2, (oz + ez)/2);
       bMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), new THREE.Vector3(dx,dy,dz).normalize());
+      bMesh.castShadow = true; bMesh.receiveShadow = true;
       treeGroup.add(bMesh);
 
-      if (depth >= 2) {
-        const clGeo = new THREE.DodecahedronGeometry(0.7 + rng() * 0.5, 1);
-        const clMesh = new THREE.Mesh(clGeo, rng() > 0.5 ? leafMatA : leafMatB);
-        clMesh.position.set(ex, ey, ez);
-        treeGroup.add(clMesh);
+      if (depth >= 2 || len < 1.1) {
+        const clustersAtTip = 16 + Math.floor(treeRng() * 14);
+        for (let k = 0; k < clustersAtTip; k++) {
+          leafClusterPositions.push({
+            x: ex + (treeRng() - 0.5) * 1.5,
+            y: ey + (treeRng() - 0.45) * 1.3,
+            z: ez + (treeRng() - 0.5) * 1.5,
+            scale: 0.32 + treeRng() * 0.35,
+            tier: depth
+          });
+        }
       }
 
-      const kids = depth === 0 ? 4 : (rng() > 0.4 ? 3 : 2);
-      for (let i = 0; i < kids; i++) {
-        const spread = 0.4 + rng() * 0.35;
-        const rot = (i / kids) * Math.PI * 2 + (rng()-0.5) * 0.5;
-        const ndx = dx + Math.cos(rot) * spread;
-        const ndy = dy + 0.2 + rng() * 0.3;
-        const ndz = dz + Math.sin(rot) * spread;
-        branch(ex, ey, ez, ndx, ndy, ndz, len * (0.68 + rng()*0.08), rad * (0.62 + rng()*0.08), depth+1);
+      if (depth >= 4 || rad < 0.06) return;
+
+      const childCount = depth === 0 ? 5 : (treeRng() > 0.3 ? 3 : 2);
+      for (let c = 0; c < childCount; c++) {
+        const spread = 0.45 + treeRng() * 0.35;
+        const angle = (c / childCount) * Math.PI * 2 + (treeRng() - 0.5) * 0.5;
+        const ndx = dx + Math.cos(angle) * spread;
+        const ndy = dy + 0.15 + treeRng() * 0.32;
+        const ndz = dz + Math.sin(angle) * spread;
+        addBough(ex, ey, ez, ndx, ndy, ndz, len * (0.68 + treeRng()*0.08), rad * (0.64 + treeRng()*0.05), depth + 1);
       }
     };
 
-    branch(0, trunkH, 0, 0, 1, 0, 3.2, 0.48, 0);
+    const forkOrigin = trunkPoints[trunkPoints.length - 1];
+    for (let pi = 0; pi < 5; pi++) {
+      const angle = (pi / 5) * Math.PI * 2 + (treeRng() - 0.5) * 0.4;
+      const ldx = Math.cos(angle) * 0.72;
+      const ldy = 0.55 + treeRng() * 0.35;
+      const ldz = Math.sin(angle) * 0.72;
+      addBough(forkOrigin.x, forkOrigin.y, forkOrigin.z, ldx, ldy, ldz, 2.2 + treeRng() * 0.5, 0.28, 0);
+    }
 
-    const crownGeo = new THREE.DodecahedronGeometry(2.4 + rng() * 0.5, 1);
-    const crown = new THREE.Mesh(crownGeo, leafMatA);
-    crown.position.set(0, trunkH + 3.8, 0);
-    treeGroup.add(crown);
+    addBough(trunkPoints[2].x, trunkPoints[2].y, trunkPoints[2].z, -0.65, 0.45, 0.4, 1.8, 0.22, 1);
+    addBough(trunkPoints[3].x, trunkPoints[3].y, trunkPoints[3].z, 0.55, 0.5, -0.5, 1.7, 0.2, 1);
 
-    // 4. Particles
+    // Crown Dome & Weeping Sprays
+    for (let v = 0; v < 420; v++) {
+      const theta = treeRng() * Math.PI * 2;
+      const phi   = treeRng() * Math.PI * 0.58;
+      const rad   = 1.2 + treeRng() * 3.4;
+      leafClusterPositions.push({
+        x: Math.sin(phi) * Math.cos(theta) * rad,
+        y: 5.8 + Math.cos(phi) * (rad * 0.7) + (treeRng() - 0.5) * 1.1,
+        z: Math.sin(phi) * Math.sin(theta) * rad,
+        scale: 0.35 + treeRng() * 0.35,
+        tier: 5
+      });
+    }
+
+    for (let w = 0; w < 220; w++) {
+      const wTheta = treeRng() * Math.PI * 2;
+      const wRad   = 2.8 + treeRng() * 2.2;
+      leafClusterPositions.push({
+        x: Math.cos(wTheta) * wRad,
+        y: 3.4 + treeRng() * 2.4,
+        z: Math.sin(wTheta) * wRad,
+        scale: 0.28 + treeRng() * 0.32,
+        tier: 6
+      });
+    }
+
+    // Instanced Micro-Petal Blossom Cloud (1,600+ elements)
+    const totalClusters = leafClusterPositions.length;
+    const clusterGeo = new THREE.IcosahedronGeometry(0.52, 1);
+    const blossomMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.42,
+      metalness: 0.02,
+      flatShading: true
+    });
+
+    const blossomMesh = new THREE.InstancedMesh(clusterGeo, blossomMat, totalClusters);
+    blossomMesh.castShadow = true; blossomMesh.receiveShadow = true;
+
+    const dummy = new THREE.Object3D();
+    const baseCol = new THREE.Color(dataColorHex);
+    const altCol  = new THREE.Color(s.leafAlt);
+    const highCol = new THREE.Color(s.leafHighlight);
+
+    for (let idx = 0; idx < totalClusters; idx++) {
+      const lp = leafClusterPositions[idx];
+      dummy.position.set(lp.x, lp.y, lp.z);
+      dummy.rotation.set(treeRng() * Math.PI, treeRng() * Math.PI, treeRng() * Math.PI);
+      dummy.scale.set(lp.scale, lp.scale * (0.8 + treeRng() * 0.35), lp.scale);
+      dummy.updateMatrix();
+      blossomMesh.setMatrixAt(idx, dummy.matrix);
+
+      const blend = treeRng();
+      const cCol = new THREE.Color();
+      if (blend < 0.55) cCol.copy(baseCol).lerp(altCol, treeRng() * 0.45);
+      else if (blend < 0.85) cCol.copy(altCol).lerp(baseCol, treeRng() * 0.35);
+      else cCol.copy(highCol).lerp(altCol, 0.4);
+
+      blossomMesh.setColorAt(idx, cCol);
+    }
+
+    blossomMesh.instanceMatrix.needsUpdate = true;
+    if (blossomMesh.instanceColor) blossomMesh.instanceColor.needsUpdate = true;
+    treeGroup.add(blossomMesh);
+
+    // Scattered fallen petals
+    const numFallen = 90;
+    const petalGeo = new THREE.CircleGeometry(0.12, 5);
+    const petalMat = new THREE.MeshStandardMaterial({ color: dataColorHex, roughness: 0.5, side: THREE.DoubleSide });
+    const fallenMesh = new THREE.InstancedMesh(petalGeo, petalMat, numFallen);
+    const fDummy = new THREE.Object3D();
+
+    for (let f = 0; f < numFallen; f++) {
+      const fRad = 0.8 + treeRng() * 4.2;
+      const fAng = treeRng() * Math.PI * 2;
+      fDummy.position.set(Math.cos(fAng) * fRad, 0.29, Math.sin(fAng) * fRad);
+      fDummy.rotation.set(-Math.PI / 2, 0, treeRng() * Math.PI * 2);
+      const sc = 0.5 + treeRng() * 0.6;
+      fDummy.scale.set(sc, sc, sc);
+      fDummy.updateMatrix();
+      fallenMesh.setMatrixAt(f, fDummy.matrix);
+    }
+    fallenMesh.instanceMatrix.needsUpdate = true;
+    fallenGroup.add(fallenMesh);
+
+    // 4. Floating Weather Particles
     if (particleRef.current) scene.remove(particleRef.current);
-    const count = 130;
+    const count = 180;
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      pos[i*3]     = (Math.random() - 0.5) * 30;
-      pos[i*3 + 1] = Math.random() * 22 + 1;
-      pos[i*3 + 2] = (Math.random() - 0.5) * 30;
+      pos[i*3]     = (Math.random() - 0.5) * 32;
+      pos[i*3 + 1] = Math.random() * 26 + 1;
+      pos[i*3 + 2] = (Math.random() - 0.5) * 32;
     }
     const pGeo = new THREE.BufferGeometry();
     pGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    const pMat = new THREE.PointsMaterial({ color: s.particleColor, size: 0.45, transparent: true, opacity: 0.85 });
+    const pMat = new THREE.PointsMaterial({ color: s.particleColor, size: 0.44, transparent: true, opacity: 0.88 });
     const pMesh = new THREE.Points(pGeo, pMat);
     scene.add(pMesh);
     particleRef.current = pMesh;
@@ -494,15 +733,13 @@ export default function MagicTreeCanvas() {
   useEffect(() => {
     const c = cam.current;
     if (qrMode) {
-      c.tPitch = 0.001; // top-down 90 deg
-      c.tYaw   = 0.0;   // square alignment
+      c.tPitch = 0.001;
+      c.tYaw   = 0.0;
       c.tDist  = 34;
-      if (treeGroupRef.current) treeGroupRef.current.visible = false;
     } else {
-      c.tPitch = 0.76;  // ~45 deg isometric
-      c.tYaw   = 0.785; // isometric diamond
-      c.tDist  = 40;
-      if (treeGroupRef.current) treeGroupRef.current.visible = true;
+      c.tPitch = 0.78;
+      c.tYaw   = 0.785;
+      c.tDist  = 38;
     }
   }, [qrMode]);
 
@@ -519,159 +756,164 @@ export default function MagicTreeCanvas() {
     setTimeout(() => setCopied(false), 2000);
   }, [shareUrl]);
 
-  // ── Audio Toggle ───────────────────────────────────────────────────────────
-  const toggleSound = useCallback(() => {
-    if (muted) {
-      try {
-        const ctx = audioCtxRef.current ?? new (window.AudioContext || (window as any).webkitAudioContext)();
-        audioCtxRef.current = ctx;
-        if (ctx.state === "suspended") ctx.resume();
-        const buf = ctx.createBuffer(1, ctx.sampleRate * 3, ctx.sampleRate);
-        const data = buf.getChannelData(0);
-        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-        const src = ctx.createBufferSource();
-        src.buffer = buf; src.loop = true;
-        const f = ctx.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 350; f.Q.value = 2.5;
-        const g = ctx.createGain(); g.gain.value = 0.05;
-        src.connect(f); f.connect(g); g.connect(ctx.destination);
-        src.start();
-        audioSrcRef.current = src;
-        setMuted(false);
-      } catch {}
-    } else {
-      audioSrcRef.current?.stop();
-      audioSrcRef.current = null;
-      setMuted(true);
-    }
-  }, [muted]);
-
   const handleUrlSubmit = () => {
     const trimmed = urlInput.trim();
     if (!trimmed) return;
     setUrl(sanitizeUrl(trimmed));
+    playOrganicChime();
   };
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden select-none bg-[#f6f1e7] font-sans">
-      {/* 3D Canvas */}
+    <div className="relative w-screen h-screen overflow-hidden select-none bg-[#f7f3eb] font-sans">
+      {/* Subtle Sky Vignette */}
+      <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_50%_30%,rgba(255,250,242,0.45)_0%,rgba(240,233,220,0.7)_100%)]" />
+
+      {/* 3D WebGL Canvas */}
       <div
         ref={containerRef}
-        onClick={() => setQrMode(v => !v)}
+        onClick={() => { setQrMode(v => !v); playOrganicChime(); }}
         className="w-full h-full cursor-grab active:cursor-grabbing"
       />
 
-      {/* Top Bar */}
-      <header className="absolute top-0 left-0 right-0 z-20 flex items-start justify-between p-4 sm:p-5 pointer-events-none">
-        <div className="pointer-events-auto cursor-pointer flex flex-col items-start gap-1">
-          <div className="font-mono text-xl sm:text-2xl font-black tracking-widest text-stone-900 leading-none">
-            CruseQR
+      {/* Top Header */}
+      <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4 sm:p-6 pointer-events-none">
+        <div className="pointer-events-auto cursor-pointer inline-flex items-center gap-2.5 bg-white/75 border border-white/90 px-3.5 py-1.5 rounded-full backdrop-blur-xl shadow-sm hover:bg-white hover:-translate-y-0.5 transition">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#c27d53] to-[#e09f67] flex items-center justify-center text-white text-xs font-bold">
+            🌸
           </div>
-          <span className="text-[9px] font-bold tracking-wider bg-yellow-200 text-yellow-900 border border-yellow-300 rounded-full px-2 py-0.5">
+          <span className="font-extrabold text-sm text-stone-900 tracking-tight">CruseQR</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#c27d53] bg-[#c27d53]/10 px-2 py-0.5 rounded-full">
             Magic Tree
           </span>
         </div>
-        <button
-          onClick={() => alert("CruseQR Magic Tree\n\nTurn any link into a living 3D tree rooted in a scannable QR code.\n\n• Tap the tree to toggle between 3D view and top-down QR scanner\n• Pick seasonal themes & custom petal colors\n• Click the upload button to share your tree!")}
-          className="pointer-events-auto w-7 h-7 rounded-full border border-stone-300 bg-white/70 text-stone-500 font-serif italic text-xs flex items-center justify-center backdrop-blur-md hover:bg-white transition"
-          title="About"
-        >
-          i
-        </button>
+
+        <div className="pointer-events-auto flex items-center gap-2">
+          <button
+            onClick={() => setInfoOpen(true)}
+            className="w-9 h-9 rounded-full bg-white/75 border border-white/90 backdrop-blur-xl flex items-center justify-center text-stone-600 hover:text-stone-950 hover:bg-white transition shadow-sm hover:-translate-y-0.5"
+            title="About Magic Tree"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setShareOpen(true)}
+            className="w-9 h-9 rounded-full bg-white/75 border border-white/90 backdrop-blur-xl flex items-center justify-center text-stone-600 hover:text-stone-950 hover:bg-white transition shadow-sm hover:-translate-y-0.5"
+            title="Share Magic Tree"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+          </button>
+        </div>
       </header>
 
-      {/* View Toggle Pill */}
+      {/* Center Floating Action Pill */}
       <button
-        onClick={() => setQrMode(v => !v)}
-        className="absolute bottom-[136px] left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-white/90 border border-stone-200 text-stone-600 text-xs font-medium shadow-sm backdrop-blur-md hover:bg-white hover:text-stone-900 transition active:scale-95"
+        onClick={() => { setQrMode(v => !v); playOrganicChime(); }}
+        className="absolute bottom-[146px] left-1/2 -translate-x-1/2 z-20 px-5 py-2 rounded-full bg-white/85 border border-white/95 text-stone-700 text-xs font-semibold shadow-lg backdrop-blur-2xl hover:bg-white hover:text-stone-900 hover:-translate-y-0.5 transition active:scale-95 flex items-center gap-2 whitespace-nowrap"
       >
-        {qrMode ? "Tap to see the tree" : "Tap the tree to see QR code"}
+        <span className="w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20 animate-pulse" />
+        <span>{qrMode ? "Tap to see 3D Magic Tree" : "Tap tree to view QR code"}</span>
       </button>
 
-      {/* Bottom Dock */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[440px] z-20 flex flex-col gap-2">
-        {/* URL Bar */}
-        <div className="bg-white rounded-2xl p-1 pl-3.5 shadow-sm border border-stone-100 flex items-center gap-2">
-          <input
-            type="text"
-            value={urlInput}
-            onChange={e => setUrlInput(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && handleUrlSubmit()}
-            placeholder="Type or paste any URL..."
-            className="flex-1 bg-transparent border-none outline-none text-xs sm:text-sm font-medium text-stone-800 placeholder-stone-400 truncate"
-          />
-          <button
-            onClick={() => { handleUrlSubmit(); setShareOpen(true); }}
-            className="w-9 h-9 rounded-xl bg-[#c27d53] hover:bg-[#b06c42] text-white flex items-center justify-center shadow transition active:scale-95"
-            title="Update & Share"
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 3v13M7 8l5-5 5 5"/>
-            </svg>
-          </button>
+      {/* QR Scanner Reticle Overlay */}
+      {qrMode && (
+        <div className="pointer-events-none fixed inset-0 z-10 flex items-center justify-center animate-fade-in">
+          <div className="w-[280px] h-[280px] relative rounded-2xl shadow-[0_0_0_9999px_rgba(0,0,0,0.08)]">
+            <div className="absolute top-0 left-0 w-6 h-6 border-t-[3px] border-l-[3px] border-[#c27d53] rounded-tl-xl" />
+            <div className="absolute top-0 right-0 w-6 h-6 border-t-[3px] border-r-[3px] border-[#c27d53] rounded-tr-xl" />
+            <div className="absolute bottom-0 left-0 w-6 h-6 border-b-[3px] border-l-[3px] border-[#c27d53] rounded-bl-xl" />
+            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-[3px] border-r-[3px] border-[#c27d53] rounded-br-xl" />
+          </div>
         </div>
+      )}
 
-        {/* Season Row */}
-        <div className="flex items-center gap-1.5">
-          {SEASONS.map((s, i) => (
-            <button
-              key={s.id}
-              onClick={() => setSeason(i)}
-              className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition active:scale-95 ${season === i ? "bg-[#e2d7c5] text-stone-900 font-bold shadow-sm" : "bg-[#ede7dc] text-stone-600 hover:bg-[#e5ded2]"}`}
-            >
-              {i === 0 && (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                  <circle cx="12" cy="12" r="3"/><circle cx="12" cy="5" r="2.5"/><circle cx="12" cy="19" r="2.5"/><circle cx="5" cy="12" r="2.5"/><circle cx="19" cy="12" r="2.5"/>
-                </svg>
-              )}
-              {i === 1 && (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                  <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
-                </svg>
-              )}
-              {i === 2 && (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                  <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><path d="M8 21v1M12 21v1M16 21v1"/>
-                </svg>
-              )}
-              {s.name}
-            </button>
-          ))}
-          <button
-            onClick={toggleSound}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95 ${!muted ? "bg-[#ede7dc] text-[#c27d53]" : "bg-[#ede7dc] text-stone-500 hover:bg-[#e5ded2]"}`}
-            title={muted ? "Sound Off" : "Sound On"}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-              {!muted ? <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/> : <><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></>}
+      {/* Bottom Contemporary Floating Glass Dock */}
+      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[calc(100%-36px)] max-w-[480px] z-20 flex flex-col gap-2.5">
+        <div className="bg-white/80 border border-white/95 rounded-2xl p-3 shadow-xl backdrop-blur-2xl flex flex-col gap-2.5">
+          {/* URL Input Row */}
+          <div className="flex items-center gap-2 bg-[#f4ede3] rounded-xl px-3 py-1 border border-stone-200/40">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-400">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
-          </button>
-        </div>
-
-        {/* Palette Row */}
-        <div className="flex items-center justify-center gap-2.5 pt-1">
-          {PALETTES.map((p, i) => (
-            <button
-              key={p.name}
-              onClick={() => setPalette(i)}
-              title={p.name}
-              style={{ background: p.color }}
-              className={`w-5 h-5 rounded-full transition ${palette === i ? "scale-125 ring-2 ring-stone-900 ring-offset-2 ring-offset-[#f6f1e7]" : "hover:scale-110 opacity-90"}`}
+            <input
+              type="text"
+              value={urlInput}
+              onChange={e => setUrlInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleUrlSubmit()}
+              placeholder="Enter any URL..."
+              className="flex-1 bg-transparent border-none outline-none text-xs sm:text-sm font-semibold text-stone-800 placeholder-stone-400 truncate"
             />
-          ))}
+            <button
+              onClick={handleUrlSubmit}
+              className="px-3.5 py-1.5 rounded-lg bg-[#c27d53] hover:bg-[#b06c42] text-white text-xs font-bold transition shadow-sm active:scale-95 flex items-center gap-1.5"
+            >
+              <span>Generate</span>
+            </button>
+          </div>
+
+          {/* Season Segmented Slider & Sound */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center bg-[#eae3d6] p-1 rounded-xl">
+              {SEASONS.map((s, i) => (
+                <button
+                  key={s.id}
+                  onClick={() => { setSeason(i); playOrganicChime(); }}
+                  className={`flex-1 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition ${season === i ? "bg-white text-stone-900 font-bold shadow-sm" : "text-stone-600 hover:text-stone-900"}`}
+                >
+                  <span>{i === 0 ? "🌸" : i === 1 ? "🌿" : "🍁"}</span>
+                  <span>{s.name}</span>
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => {
+                setSoundEnabled(v => !v);
+                if (!soundEnabled) playOrganicChime();
+              }}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95 ${soundEnabled ? "bg-[#c27d53] text-white" : "bg-[#eae3d6] text-stone-600 hover:bg-[#dfd7c9]"}`}
+              title={soundEnabled ? "Nature Sounds: ON" : "Nature Sounds: OFF"}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                {soundEnabled && <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />}
+              </svg>
+            </button>
+          </div>
+
+          {/* Palette Swatches */}
+          <div className="flex items-center justify-center gap-3 pt-0.5">
+            {PALETTES.map((p, i) => (
+              <button
+                key={p.name}
+                onClick={() => { setPalette(i); playOrganicChime(); }}
+                title={p.name}
+                style={{ background: p.color }}
+                className={`w-5 h-5 rounded-full transition-transform ${palette === i ? "scale-125 ring-2 ring-white ring-offset-2 ring-offset-stone-900" : "hover:scale-110 opacity-90"}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Share Modal */}
       {shareOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShareOpen(false)}>
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-bold text-stone-900">Share Your Magic Tree</h3>
-              <button onClick={() => setShareOpen(false)} className="text-stone-400 hover:text-stone-700 text-lg font-bold">✕</button>
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setShareOpen(false)}>
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-white/80" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-base font-bold text-stone-900">Share Magic Tree</h3>
+              <button onClick={() => setShareOpen(false)} className="w-7 h-7 rounded-full bg-stone-100 text-stone-500 hover:text-stone-900 flex items-center justify-center font-bold">✕</button>
             </div>
             <p className="text-xs text-stone-500 mb-4 leading-relaxed">
-              Anyone who opens this link will see your exact custom 3D tree rooted in this scannable QR code.
+              Anyone who opens this link will explore your interactive living botanical tree and scannable QR pavement.
             </p>
             <div className="flex items-center gap-2">
               <input readOnly value={shareUrl} className="flex-1 px-3 py-2 rounded-xl bg-stone-100 border border-stone-200 text-xs font-mono text-stone-700 truncate" />
@@ -681,6 +923,39 @@ export default function MagicTreeCanvas() {
               >
                 {copied ? "Copied!" : "Copy"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Info Modal */}
+      {infoOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setInfoOpen(false)}>
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-white/80" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-bold text-stone-900">About CruseQR Magic Tree</h3>
+              <button onClick={() => setInfoOpen(false)} className="w-7 h-7 rounded-full bg-stone-100 text-stone-500 hover:text-stone-900 flex items-center justify-center font-bold">✕</button>
+            </div>
+            <p className="text-xs text-stone-500 mb-4 leading-relaxed">
+              A state-of-the-art interactive 3D procedural botanical tree engineered directly into a fully scannable QR code mosaic.
+            </p>
+            <div className="flex flex-col gap-2.5 text-xs text-stone-700">
+              <div className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded bg-[#c27d53]/10 text-[#c27d53] flex items-center justify-center text-xs flex-shrink-0">🌳</span>
+                <div><strong>Botanical Branch Skeleton:</strong> Multi-tiered organic boughs, buttress roots, and natural weeping cherry blossom branches.</div>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded bg-[#c27d53]/10 text-[#c27d53] flex items-center justify-center text-xs flex-shrink-0">✨</span>
+                <div><strong>1,600+ Blossom Clusters:</strong> Layered petal cloud with botanical color depth, translucency, and fallen petals.</div>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded bg-[#c27d53]/10 text-[#c27d53] flex items-center justify-center text-xs flex-shrink-0">📱</span>
+                <div><strong>Dual Camera Modes:</strong> Seamlessly glide between 3D isometric view and overhead top-down view for 100% camera scanning.</div>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded bg-[#c27d53]/10 text-[#c27d53] flex items-center justify-center text-xs flex-shrink-0">🍃</span>
+                <div><strong>Harmonic Wind Physics:</strong> Realistic multi-frequency wind swaying and dynamic floating seasonal particles.</div>
+              </div>
             </div>
           </div>
         </div>

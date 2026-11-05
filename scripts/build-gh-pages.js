@@ -8,415 +8,650 @@ const html = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-<title>CruseQR Magic Tree — 3D Interactive QR Code</title>
+<title>CruseQR Magic Tree — Next-Gen 3D Interactive Botanical QR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;}
-  html,body{
-    width:100%;height:100%;
-    background:#f6f1e7;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    overflow:hidden;
-    user-select:none;-webkit-user-select:none;
-    -webkit-font-smoothing:antialiased;
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%;
+    background: #f7f3eb;
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+    user-select: none; -webkit-user-select: none;
+    -webkit-font-smoothing: antialiased;
+    color: #1f1d1a;
   }
-  #canvas-container{
-    position:fixed;inset:0;width:100%;height:100%;
-    cursor:grab;z-index:1;
-  }
-  #canvas-container:active{cursor:grabbing;}
-  canvas{display:block;width:100%!important;height:100%!important;}
 
-  /* Top Bar */
-  #topbar{
-    position:fixed;top:0;left:0;right:0;z-index:20;
-    display:flex;align-items:flex-start;justify-content:space-between;
-    padding:16px 20px;pointer-events:none;
+  #canvas-container {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    cursor: grab; z-index: 1;
   }
-  .brand-group{
-    pointer-events:auto;cursor:pointer;
-    display:flex;flex-direction:column;align-items:flex-start;gap:4px;
-  }
-  .brand-logo{
-    font-family:"Courier New",Courier,monospace,sans-serif;
-    font-size:22px;font-weight:900;letter-spacing:3px;
-    color:#262421;line-height:1;
-    text-shadow:1px 1px 0px rgba(0,0,0,0.06);
-  }
-  .brand-pill{
-    font-size:9px;font-weight:700;letter-spacing:0.04em;
-    background:#fef08a;color:#854d0e;
-    border:1px solid #fde047;border-radius:999px;
-    padding:2px 8px;display:inline-block;
-  }
-  .info-btn{
-    pointer-events:auto;width:28px;height:28px;
-    border-radius:50%;border:1.5px solid #dcd5ca;background:rgba(255,255,255,0.7);
-    color:#78716c;font-size:12px;font-weight:700;font-family:serif;font-style:italic;
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer;backdrop-filter:blur(8px);transition:all 0.15s;
-  }
-  .info-btn:hover{background:#fff;border-color:#a8a29e;color:#1c1917;}
+  #canvas-container:active { cursor: grabbing; }
+  canvas { display: block; width: 100% !important; height: 100% !important; }
 
-  /* Floating View Toggle Pill */
-  #toggle-pill{
-    position:fixed;bottom:136px;left:50%;transform:translateX(-50%);
-    z-index:20;cursor:pointer;
-    background:rgba(255,255,255,0.88);
-    border:1px solid rgba(0,0,0,0.06);
-    box-shadow:0 2px 10px rgba(0,0,0,0.04);
-    backdrop-filter:blur(10px);
-    border-radius:999px;padding:7px 18px;
-    font-size:12px;font-weight:500;color:#6b645b;
-    transition:all 0.2s cubic-bezier(0.16,1,0.3,1);
-    white-space:nowrap;
+  /* Ambient Vignette & Sky Glow */
+  .sky-ambient {
+    position: fixed; inset: 0; pointer-events: none; z-index: 2;
+    background: radial-gradient(circle at 50% 30%, rgba(255, 250, 242, 0.45) 0%, rgba(240, 233, 220, 0.7) 100%);
   }
-  #toggle-pill:hover{
-    background:#fff;color:#1c1917;
-    box-shadow:0 4px 16px rgba(0,0,0,0.08);
-    transform:translateX(-50%) translateY(-1px);
-  }
-  #toggle-pill:active{transform:translateX(-50%) scale(0.97);}
 
-  /* Bottom Dock */
-  #dock{
-    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    width:calc(100% - 32px);max-width:440px;z-index:20;
-    display:flex;flex-direction:column;gap:8px;
+  /* Top Minimalist Header */
+  #header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 24px; pointer-events: none;
   }
-  .url-bar{
-    background:#ffffff;border-radius:14px;
-    padding:4px 6px 4px 14px;
-    box-shadow:0 2px 12px rgba(0,0,0,0.04),0 1px 2px rgba(0,0,0,0.03);
-    border:1px solid rgba(0,0,0,0.04);
-    display:flex;align-items:center;gap:8px;
+  .brand-chip {
+    pointer-events: auto; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    padding: 6px 14px 6px 8px; border-radius: 999px;
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .url-input{
-    flex:1;border:none;outline:none;background:transparent;
-    font-size:13px;font-weight:500;color:#292524;
-    font-family:inherit;overflow:hidden;text-overflow:ellipsis;
+  .brand-chip:hover {
+    background: rgba(255, 255, 255, 0.92);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
   }
-  .url-input::placeholder{color:#a8a29e;font-weight:400;}
-  .action-btn{
-    width:36px;height:36px;border-radius:10px;
-    background:#c27d53;border:none;color:#ffffff;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;
-    transition:transform 0.15s,background 0.15s;
-    box-shadow:0 2px 6px rgba(194,125,83,0.3);
+  .brand-badge {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: linear-gradient(135deg, #c27d53, #e09f67);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 800;
   }
-  .action-btn:hover{background:#b06c42;}
-  .action-btn:active{transform:scale(0.93);}
+  .brand-name {
+    font-weight: 800; font-size: 14px; letter-spacing: -0.02em; color: #1c1917;
+  }
+  .brand-tag {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    color: #c27d53; background: rgba(194, 125, 83, 0.12); padding: 2px 7px; border-radius: 999px;
+  }
 
-  /* Season Selectors Row */
-  .season-row{
-    display:flex;align-items:center;gap:6px;
+  .header-actions {
+    pointer-events: auto; display: flex; align-items: center; gap: 8px;
   }
-  .season-btn{
-    flex:1;padding:8px 8px;border-radius:12px;
-    border:none;background:#ede7dc;
-    font-size:12px;font-weight:600;color:#6b645b;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
-    transition:all 0.15s ease;
+  .btn-icon-round {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #57534e; transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.03);
   }
-  .season-btn:hover{background:#e5ded2;}
-  .season-btn.active{
-    background:#e2d7c5;color:#292524;font-weight:700;
-    box-shadow:0 1px 3px rgba(0,0,0,0.05);
+  .btn-icon-round:hover {
+    background: #fff; color: #1c1917; transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.07);
   }
-  .sound-btn{
-    width:36px;height:36px;border-radius:12px;
-    border:none;background:#ede7dc;color:#6b645b;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;
-    transition:all 0.15s;flex-shrink:0;
-  }
-  .sound-btn:hover{background:#e5ded2;}
-  .sound-btn.active{color:#c27d53;}
 
-  /* Palette Swatches Row */
-  .palette-row{
-    display:flex;align-items:center;justify-content:center;gap:10px;
-    padding-top:4px;
+  /* Center Floating Tap Pill */
+  #action-pill {
+    position: fixed; bottom: 146px; left: 50%; transform: translateX(-50%);
+    z-index: 20; cursor: pointer;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0,0,0,0.03);
+    border-radius: 999px; padding: 9px 20px;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: #44403c;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
   }
-  .swatch{
-    width:22px;height:22px;border-radius:50%;
-    border:none;cursor:pointer;
-    transition:transform 0.15s,box-shadow 0.15s;
-    opacity:0.9;
+  #action-pill:hover {
+    background: #ffffff; color: #0c0a09;
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
   }
-  .swatch:hover{transform:scale(1.12);opacity:1;}
-  .swatch.active{
-    transform:scale(1.18);opacity:1;
-    box-shadow:0 0 0 2px #f6f1e7,0 0 0 4px #292524;
+  #action-pill:active { transform: translateX(-50%) scale(0.96); }
+  .pill-pulse {
+    width: 8px; height: 8px; border-radius: 50%; background: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+    animation: pulseDot 2s infinite ease-in-out;
+  }
+  @keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.6; }
+  }
+
+  /* Scan Reticle Overlay in QR Mode */
+  #scan-overlay {
+    position: fixed; inset: 0; pointer-events: none; z-index: 10;
+    display: none; align-items: center; justify-content: center;
+    transition: opacity 0.4s ease; opacity: 0;
+  }
+  #scan-overlay.active {
+    display: flex; opacity: 1;
+  }
+  .scan-reticle {
+    width: 280px; height: 280px; position: relative;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
+  }
+  .reticle-corner {
+    position: absolute; width: 24px; height: 24px;
+    border-color: #c27d53; border-style: solid; border-width: 0;
+  }
+  .reticle-tl { top: -2px; left: -2px; border-top-width: 3px; border-left-width: 3px; border-top-left-radius: 12px; }
+  .reticle-tr { top: -2px; right: -2px; border-top-width: 3px; border-right-width: 3px; border-top-right-radius: 12px; }
+  .reticle-bl { bottom: -2px; left: -2px; border-bottom-width: 3px; border-left-width: 3px; border-bottom-left-radius: 12px; }
+  .reticle-br { bottom: -2px; right: -2px; border-bottom-width: 3px; border-right-width: 3px; border-bottom-right-radius: 12px; }
+  .reticle-beam {
+    position: absolute; left: 6px; right: 6px; height: 2px;
+    background: linear-gradient(90deg, transparent, #c27d53, #e09f67, #c27d53, transparent);
+    top: 10%; box-shadow: 0 0 10px rgba(194, 125, 83, 0.6);
+    animation: scanBeam 2.4s ease-in-out infinite alternate;
+  }
+  @keyframes scanBeam {
+    0% { top: 8%; opacity: 0.3; }
+    50% { opacity: 1; }
+    100% { top: 92%; opacity: 0.3; }
+  }
+
+  /* Bottom Contemporary Floating Glass Dock */
+  #dock {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    width: calc(100% - 36px); max-width: 480px; z-index: 20;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+
+  .dock-card {
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+    border-radius: 20px; padding: 12px 14px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.02);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+
+  /* URL Bar Row */
+  .url-row {
+    display: flex; align-items: center; gap: 8px;
+    background: #f4ede3; border-radius: 14px;
+    padding: 5px 6px 5px 14px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+  .url-icon {
+    color: #a8a29e; font-size: 14px; flex-shrink: 0;
+  }
+  .url-input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-size: 13px; font-weight: 600; color: #1c1917;
+    font-family: inherit; overflow: hidden; text-overflow: ellipsis;
+  }
+  .url-input::placeholder { color: #a8a29e; font-weight: 400; }
+  .btn-submit {
+    padding: 8px 14px; border-radius: 10px;
+    background: #c27d53; border: none; color: #ffffff;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.2s;
+    box-shadow: 0 3px 10px rgba(194, 125, 83, 0.35);
+    flex-shrink: 0;
+  }
+  .btn-submit:hover { background: #b06c42; transform: translateY(-1px); }
+  .btn-submit:active { transform: scale(0.95); }
+
+  /* Season & Audio Controls Row */
+  .controls-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .season-segment {
+    display: flex; align-items: center; background: #eae3d6;
+    border-radius: 12px; padding: 3px; flex: 1;
+  }
+  .season-tab {
+    flex: 1; padding: 7px 6px; border-radius: 9px; border: none;
+    background: transparent; font-size: 12px; font-weight: 600; color: #78716c;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .season-tab:hover { color: #292524; }
+  .season-tab.active {
+    background: #ffffff; color: #1c1917; font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .btn-icon-dock {
+    width: 36px; height: 36px; border-radius: 12px;
+    background: #eae3d6; border: none; color: #78716c;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0;
+  }
+  .btn-icon-dock:hover { background: #dfd7c9; color: #1c1917; }
+  .btn-icon-dock.active { background: #c27d53; color: #ffffff; }
+
+  /* Color Palette Row */
+  .palette-row {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    padding-top: 2px;
+  }
+  .swatch {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: none; cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+    position: relative;
+  }
+  .swatch:hover { transform: scale(1.18); }
+  .swatch.active {
+    transform: scale(1.25);
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1c1917;
   }
 
   /* Share Modal */
-  #modal-bg{
-    position:fixed;inset:0;z-index:50;background:rgba(0,0,0,0.35);
-    backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px;
+  #modal-bg {
+    position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.38);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    display: none; align-items: center; justify-content: center; padding: 20px;
   }
-  #modal-bg.open{display:flex;}
-  #modal{
-    background:#ffffff;border-radius:24px;padding:24px;
-    max-width:380px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.15);
+  #modal-bg.open { display: flex; }
+  #modal {
+    background: #ffffff; border-radius: 24px; padding: 26px;
+    max-width: 400px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.8);
   }
-  .modal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-  .modal-title{font-size:15px;font-weight:800;color:#1c1917;}
-  .modal-close{font-size:18px;font-weight:700;color:#a8a29e;cursor:pointer;border:none;background:none;}
-  .modal-desc{font-size:12px;color:#78716c;margin-bottom:14px;line-height:1.5;}
-  .modal-url-row{display:flex;align-items:center;gap:6px;}
-  #share-url{
-    flex:1;padding:9px 12px;border-radius:10px;background:#f5f5f4;
-    border:1px solid #e7e5e4;font-size:11px;font-family:monospace;color:#44403c;outline:none;
+  .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .modal-title { font-size: 16px; font-weight: 800; color: #1c1917; }
+  .modal-close {
+    width: 30px; height: 30px; border-radius: 50%; border: none;
+    background: #f5f5f4; color: #78716c; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
   }
-  .copy-btn{
-    padding:9px 14px;border-radius:10px;background:#c27d53;
-    border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
+  .modal-close:hover { background: #e7e5e4; color: #1c1917; }
+  .modal-desc { font-size: 13px; color: #78716c; margin-bottom: 16px; line-height: 1.5; }
+  .modal-input-row { display: flex; align-items: center; gap: 8px; }
+  #share-url {
+    flex: 1; padding: 10px 14px; border-radius: 12px; background: #f5f5f4;
+    border: 1px solid #e7e5e4; font-size: 12px; font-family: "JetBrains Mono", monospace;
+    color: #292524; outline: none;
+  }
+  .btn-modal-copy {
+    padding: 10px 16px; border-radius: 12px; background: #c27d53;
+    border: none; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer;
+    white-space: nowrap; transition: all 0.2s;
+  }
+  .btn-modal-copy:hover { background: #b06c42; }
+
+  /* Info Modal */
+  #info-modal-bg {
+    position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.38);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  #info-modal-bg.open { display: flex; }
+  .info-modal {
+    background: #ffffff; border-radius: 24px; padding: 26px;
+    max-width: 420px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+  }
+  .info-feature-list {
+    margin-top: 14px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .info-feature-item {
+    display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #44403c; line-height: 1.4;
+  }
+  .info-feature-icon {
+    width: 22px; height: 22px; border-radius: 6px; background: rgba(194, 125, 83, 0.15);
+    color: #c27d53; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0;
   }
 </style>
 
-<!-- Inlined QR Code generator -->
+<!-- Inlined Verified QR Code Generator Engine -->
 <script>
 ${qrcodeLib}
 </script>
 
-<!-- Three.js r128 -->
+<!-- Three.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-if (!window.THREE) {
-  document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\\\\/script>');
-}
-</script>
 </head>
 <body>
 
-<!-- Top Bar -->
-<header id="topbar">
-  <div class="brand-group" id="brand-group">
-    <div class="brand-logo">CruseQR</div>
-    <div class="brand-pill">Magic Tree</div>
-  </div>
-  <button class="info-btn" id="info-btn" title="About">i</button>
-</header>
-
-<!-- 3D Canvas -->
+<div class="sky-ambient"></div>
 <div id="canvas-container"></div>
 
-<!-- View Toggle Pill -->
-<div id="toggle-pill">Tap the tree to see QR code</div>
+<!-- Top Minimalist Bar -->
+<header id="header">
+  <div class="brand-chip" id="brand-chip" title="CruseQR Magic Tree">
+    <div class="brand-badge">🌸</div>
+    <span class="brand-name">CruseQR</span>
+    <span class="brand-tag">Magic Tree</span>
+  </div>
 
-<!-- Bottom Dock -->
+  <div class="header-actions">
+    <button class="btn-icon-round" id="btn-info" title="About & Features">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+    </button>
+    <button class="btn-icon-round" id="btn-share-top" title="Share Magic Tree">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+        <polyline points="16 6 12 2 8 6"></polyline>
+        <line x1="12" y1="2" x2="12" y2="15"></line>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- Floating Action Pill -->
+<button id="action-pill">
+  <span class="pill-pulse"></span>
+  <span id="pill-label">Tap tree to view QR code</span>
+</button>
+
+<!-- Scan Overlay with Animated Reticle -->
+<div id="scan-overlay">
+  <div class="scan-reticle">
+    <div class="reticle-corner reticle-tl"></div>
+    <div class="reticle-corner reticle-tr"></div>
+    <div class="reticle-corner reticle-bl"></div>
+    <div class="reticle-corner reticle-br"></div>
+    <div class="reticle-beam"></div>
+  </div>
+</div>
+
+<!-- Bottom Floating Glass Island Dock -->
 <div id="dock">
-  <div class="url-bar">
-    <input type="text" id="url-input" class="url-input" placeholder="Type or paste any URL..." />
-    <button class="action-btn" id="btn-share" title="Share & Update">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 3v13M7 8l5-5 5 5"/>
-      </svg>
-    </button>
-  </div>
+  <div class="dock-card">
+    <!-- URL Input Row -->
+    <div class="url-row">
+      <span class="url-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+      </span>
+      <input type="text" id="url-input" class="url-input" placeholder="Enter any URL..." autocomplete="off" spellcheck="false"/>
+      <button class="btn-submit" id="btn-generate">
+        <span>Generate</span>
+      </button>
+    </div>
 
-  <div class="season-row">
-    <button class="season-btn active" data-s="0">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-        <circle cx="12" cy="12" r="3"/><circle cx="12" cy="5" r="2.5"/><circle cx="12" cy="19" r="2.5"/><circle cx="5" cy="12" r="2.5"/><circle cx="19" cy="12" r="2.5"/>
-      </svg>
-      Spring
-    </button>
-    <button class="season-btn" data-s="1">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-        <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
-      </svg>
-      Summer
-    </button>
-    <button class="season-btn" data-s="2">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-        <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><path d="M8 21v1M12 21v1M16 21v1"/>
-      </svg>
-      Autumn
-    </button>
-    <button class="sound-btn" id="btn-sound" title="Toggle Sound">
-      <svg id="sound-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
-      </svg>
-    </button>
-  </div>
+    <!-- Controls Row: Season Slider + Audio -->
+    <div class="controls-row">
+      <div class="season-segment">
+        <button class="season-tab active" data-season="0">
+          <span>🌸</span> <span>Spring</span>
+        </button>
+        <button class="season-tab" data-season="1">
+          <span>🌿</span> <span>Summer</span>
+        </button>
+        <button class="season-tab" data-season="2">
+          <span>🍁</span> <span>Autumn</span>
+        </button>
+      </div>
 
-  <div class="palette-row" id="palette-row"></div>
+      <button class="btn-icon-dock" id="btn-sound" title="Toggle Nature Sounds">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="sound-icon-on">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Palette Swatches Row -->
+    <div class="palette-row" id="palette-row"></div>
+  </div>
 </div>
 
 <!-- Share Modal -->
 <div id="modal-bg">
-  <div id="modal" onclick="event.stopPropagation()">
-    <div class="modal-top">
-      <span class="modal-title">Share Your Magic Tree</span>
-      <button class="modal-close" id="modal-close">✕</button>
+  <div id="modal">
+    <div class="modal-head">
+      <span class="modal-title">Share Magic Tree</span>
+      <button class="modal-close" id="modal-close">&times;</button>
     </div>
-    <p class="modal-desc">Anyone who opens this link will see your customized 3D tree and scannable QR code.</p>
-    <div class="modal-url-row">
-      <input class="url-input" id="share-url" readonly />
-      <button class="copy-btn" id="btn-copy">Copy</button>
+    <p class="modal-desc">Share your interactive 3D living QR tree with anyone. Works in any modern mobile or desktop browser.</p>
+    <div class="modal-input-row">
+      <input type="text" id="share-url" readonly />
+      <button class="btn-modal-copy" id="btn-copy">Copy Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- Info Modal -->
+<div id="info-modal-bg">
+  <div class="info-modal">
+    <div class="modal-head">
+      <span class="modal-title">About CruseQR Magic Tree</span>
+      <button class="modal-close" id="info-modal-close">&times;</button>
+    </div>
+    <p class="modal-desc">A state-of-the-art interactive 3D procedural botanical tree engineered directly into a fully scannable QR code mosaic.</p>
+    <div class="info-feature-list">
+      <div class="info-feature-item">
+        <div class="info-feature-icon">🌳</div>
+        <div><strong>Botanical Branch Skeleton:</strong> Multi-tiered organic boughs, buttress roots, and natural weeping cherry blossom branches.</div>
+      </div>
+      <div class="info-feature-item">
+        <div class="info-feature-icon">✨</div>
+        <div><strong>1,600+ Blossom Clusters:</strong> Layered petal cloud with botanical color depth, translucency, and fallen petals.</div>
+      </div>
+      <div class="info-feature-item">
+        <div class="info-feature-icon">📱</div>
+        <div><strong>Dual Camera Modes:</strong> Seamlessly glide between 3D isometric view and overhead top-down view for 100% camera scanning.</div>
+      </div>
+      <div class="info-feature-item">
+        <div class="info-feature-icon">🍃</div>
+        <div><strong>Harmonic Wind Physics:</strong> Realistic multi-frequency wind swaying and dynamic floating seasonal particles.</div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-(function () {
-  'use strict';
+(function() {
+  // ── Color & Season Definitions ─────────────────────────────────────────────
+  var PALETTES = [
+    { name: "Sakura Pink", color: "#f48fb1", hex: 0xf48fb1 },
+    { name: "Wisteria Lavender", color: "#b39ddb", hex: 0xb39ddb },
+    { name: "Crimson Maple", color: "#e57373", hex: 0xe57373 },
+    { name: "Golden Gingko", color: "#ffb74d", hex: 0xffb74d },
+    { name: "Cerulean Sky", color: "#64b5f6", hex: 0x64b5f6 },
+    { name: "Emerald Pine", color: "#81c784", hex: 0x81c784 }
+  ];
 
-  function getDefaultUrl() {
-    try {
-      if (location.origin && location.origin !== 'null' && location.origin !== 'file://') {
-        return location.origin + location.pathname;
-      }
-    } catch(e) {}
-    return 'https://kaushalboii.github.io/cruseqr/';
-  }
-
-  function cleanUrl(u) {
-    if (!u) return getDefaultUrl();
-    var s = u.trim();
-    if (s === 'https://icqr.com/' || s === 'https://icqr.com' || s === 'https://cruseqr.com/' || s === 'https://cruseqr.com' || s === '') {
-      return getDefaultUrl();
-    }
-    return (s.indexOf('http://') === 0 || s.indexOf('https://') === 0) ? s : ('https://' + s);
-  }
-
-  // ── Seasons Config ─────────────────────────────────────────────────────────
   var SEASONS = [
     {
-      id: 'spring', name: 'Spring',
-      groundColor: 0xe6e0d4, groundEdge: 0xb5ada0,
-      trunkColor: 0x4a3425,
-      leafColor: 0xf3a6ba, leafAlt: 0xfcd4e0, leafHighlight: 0xffffff,
-      particleColor: 0xf7b7cb,
-      grassColor: 0x6bb343, finderColor: 0x4da832,
-      weatherType: 'petals'
+      name: "Spring",
+      skyColor: 0xfaf4ec,
+      groundColor: 0xeae3d8,
+      groundEdge: 0xd8cebf,
+      grassColor: 0x76a035,
+      trunkColor: 0x4a2e1b,
+      leafColor: 0xf48fb1,
+      leafAlt: 0xffccd5,
+      leafHighlight: 0xffffff,
+      finderColor: 0x4d8c28,
+      particleColor: 0xffb7c5,
+      weatherType: "blossom"
     },
     {
-      id: 'summer', name: 'Summer',
-      groundColor: 0xe2ded2, groundEdge: 0xa8a194,
-      trunkColor: 0x3d2b1e,
-      leafColor: 0x5ea838, leafAlt: 0x76c24c, leafHighlight: 0x9be868,
-      particleColor: 0x70be46,
-      grassColor: 0x458b22, finderColor: 0x3d821e,
-      weatherType: 'leaves'
+      name: "Summer",
+      skyColor: 0xf7f5eb,
+      groundColor: 0xe8e2d4,
+      groundEdge: 0xd6cbb8,
+      grassColor: 0x4e8d24,
+      trunkColor: 0x3e2716,
+      leafColor: 0x4caf50,
+      leafAlt: 0x81c784,
+      leafHighlight: 0xc8e6c9,
+      finderColor: 0x2e7d32,
+      particleColor: 0x81c784,
+      weatherType: "leaves"
     },
     {
-      id: 'autumn', name: 'Autumn',
-      groundColor: 0xe4ded3, groundEdge: 0xa59e92,
-      trunkColor: 0x442c1c,
-      leafColor: 0xeb9126, leafAlt: 0xf6b948, leafHighlight: 0xffdc73,
-      particleColor: 0x948e84,
-      grassColor: 0xd49b28, finderColor: 0xc48618,
-      weatherType: 'rain'
+      name: "Autumn",
+      skyColor: 0xf7f0e6,
+      groundColor: 0xe5dcce,
+      groundEdge: 0xd2c4b0,
+      grassColor: 0x9b8332,
+      trunkColor: 0x432818,
+      leafColor: 0xd84315,
+      leafAlt: 0xf4511e,
+      leafHighlight: 0xffb74d,
+      finderColor: 0xbf360c,
+      particleColor: 0xef6c00,
+      weatherType: "autumnLeaves"
     }
   ];
 
-  var PALETTES = [
-    { name: 'Sakura Pink',  hex: 0xf3a6ba, color: '#f3a6ba' },
-    { name: 'Purple',       hex: 0x9b6bcf, color: '#9b6bcf' },
-    { name: 'Berry Red',    hex: 0xe54b4b, color: '#e54b4b' },
-    { name: 'Golden Amber', hex: 0xf0a500, color: '#f0a500' },
-    { name: 'Sky Blue',     hex: 0x3b82f6, color: '#3b82f6' },
-    { name: 'Slate Teal',   hex: 0x2d7a6b, color: '#2d7a6b' }
-  ];
-
-  var state = {
-    url: getDefaultUrl(),
-    season: 0,
-    palette: 0,
-    seed: 42,
-    qrMode: false,
-    muted: true
-  };
-
-  try {
-    var q = new URLSearchParams(location.search).get('q');
-    if (q) {
-      var d = atob(q);
-      if (d.length >= 2 && !isNaN(parseInt(d[0])) && !isNaN(parseInt(d[1]))) {
-        state.season  = Math.min(2, Math.max(0, parseInt(d[0]) || 0));
-        state.palette = Math.min(5, Math.max(0, parseInt(d[1]) || 0));
-        state.url     = cleanUrl(d.slice(2));
-      } else {
-        state.url = cleanUrl(d);
-      }
+  function cleanUrl(s) {
+    if (!s) return location.href;
+    var trimmed = s.trim();
+    if (trimmed.indexOf("http://") === 0 || trimmed.indexOf("https://") === 0) {
+      return trimmed;
     }
-  } catch(e) {}
-
-  function makeRng(seed) {
-    var s = seed >>> 0;
-    return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+    return "https://" + trimmed;
   }
 
-  // ── Three.js Scene ─────────────────────────────────────────────────────────
+  function parseInitialQuery() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var q = params.get('q');
+      if (q) {
+        var raw = atob(q);
+        var sIdx = parseInt(raw.charAt(0)) || 0;
+        var pIdx = parseInt(raw.charAt(1)) || 0;
+        var rest = raw.substring(2);
+        return {
+          url: cleanUrl(rest),
+          season: Math.max(0, Math.min(2, sIdx)),
+          palette: Math.max(0, Math.min(5, pIdx))
+        };
+      }
+    } catch(e) {}
+    return {
+      url: window.location.href,
+      season: 0,
+      palette: 0
+    };
+  }
+
+  var init = parseInitialQuery();
+  var state = {
+    url: init.url,
+    season: init.season,
+    palette: init.palette,
+    qrMode: false,
+    soundEnabled: false,
+    seed: 1337
+  };
+
+  // Seeded PRNG for deterministic natural beauty
+  function makeRng(seed) {
+    var s = seed % 2147483647;
+    if (s <= 0) s += 2147483646;
+    return function() {
+      s = (s * 16807) % 2147483647;
+      return (s - 1) / 2147483646;
+    };
+  }
+
+  // ── Web Audio Nature Synthesizer ───────────────────────────────────────────
+  var audioCtx = null;
+  function playOrganicChime() {
+    if (!state.soundEnabled) return;
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      var now = audioCtx.currentTime;
+      var notes = [523.25, 659.25, 783.99, 1046.50]; // C E G C pentatonic chime
+      var note = notes[Math.floor(Math.random() * notes.length)];
+
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(note, now);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.exponentialRampToValueAtTime(0.12, now + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 1.25);
+    } catch(e) {}
+  }
+
+  // ── Three.js Scene Setup ───────────────────────────────────────────────────
+  var container = document.getElementById('canvas-container');
   var scene, camera, renderer, clock;
-  var rootGroup, platformGroup, qrGroup, treeGroup, particleMesh;
-  var treeScale = 1.0;
+  var rootGroup, platformGroup, qrGroup, treeGroup, particleMesh, fallenPetalsGroup;
+
   var cam = {
-    pitch: 0.76, yaw: 0.785, dist: 40,
-    tPitch: 0.76, tYaw: 0.785, tDist: 40,
+    pitch: 0.78, yaw: 0.785, dist: 38,
+    tPitch: 0.78, tYaw: 0.785, tDist: 38,
     dragging: false, px: 0, py: 0
   };
+  var treeScale = 1.0;
 
   function initThree() {
     var THREE = window.THREE;
-    var container = document.getElementById('canvas-container');
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(SEASONS[state.season].skyColor);
+    scene.fog = new THREE.FogExp2(SEASONS[state.season].skyColor, 0.012);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    camera = new THREE.PerspectiveCamera(38, container.clientWidth / container.clientHeight, 0.5, 200);
+    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.08;
     container.appendChild(renderer.domElement);
 
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf6f1e7);
     clock = new THREE.Clock();
 
-    camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 500);
-
-    // Warm, soft botanical illumination
+    // Natural Sun & Atmosphere Lighting
     var ambLight = new THREE.AmbientLight(0xfffdf7, 0.95);
     scene.add(ambLight);
 
-    var hemiLight = new THREE.HemisphereLight(0xfff5ea, 0xd0c8b8, 0.4);
+    var hemiLight = new THREE.HemisphereLight(0xfff7ed, 0xdcd5c5, 0.5);
     scene.add(hemiLight);
 
-    var dirLight = new THREE.DirectionalLight(0xfff5e6, 1.45);
-    dirLight.position.set(28, 48, 26);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = dirLight.shadow.mapSize.height = 2048;
-    dirLight.shadow.camera.left   = -22; dirLight.shadow.camera.right  = 22;
-    dirLight.shadow.camera.top    =  22; dirLight.shadow.camera.bottom = -22;
-    dirLight.shadow.camera.near   = 0.5; dirLight.shadow.camera.far    = 130;
-    dirLight.shadow.bias = -0.0003;
-    scene.add(dirLight);
+    var sunLight = new THREE.DirectionalLight(0xfff5e6, 1.55);
+    sunLight.position.set(24, 46, 22);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.camera.left   = -24; sunLight.shadow.camera.right  = 24;
+    sunLight.shadow.camera.top    =  24; sunLight.shadow.camera.bottom = -24;
+    sunLight.shadow.camera.near   = 0.5; sunLight.shadow.camera.far    = 140;
+    sunLight.shadow.bias = -0.0002;
+    scene.add(sunLight);
 
-    rootGroup     = new THREE.Group(); scene.add(rootGroup);
-    platformGroup = new THREE.Group(); rootGroup.add(platformGroup);
-    qrGroup       = new THREE.Group(); rootGroup.add(qrGroup);
-    treeGroup     = new THREE.Group(); rootGroup.add(treeGroup);
+    rootGroup          = new THREE.Group(); scene.add(rootGroup);
+    platformGroup      = new THREE.Group(); rootGroup.add(platformGroup);
+    qrGroup            = new THREE.Group(); rootGroup.add(qrGroup);
+    treeGroup          = new THREE.Group(); rootGroup.add(treeGroup);
+    fallenPetalsGroup  = new THREE.Group(); rootGroup.add(fallenPetalsGroup);
 
-    // Orbit controls
+    // Orbit Drag Controls
     container.addEventListener('mousedown', function (e) {
       cam.dragging = true; cam.px = e.clientX; cam.py = e.clientY;
     });
     window.addEventListener('mousemove', function (e) {
       if (!cam.dragging || state.qrMode) return;
-      cam.tYaw   -= (e.clientX - cam.px) * 0.007;
-      cam.tPitch  = Math.max(0.18, Math.min(1.4, cam.tPitch + (e.clientY - cam.py) * 0.007));
+      cam.tYaw  -= (e.clientX - cam.px) * 0.0065;
+      cam.tPitch = Math.max(0.15, Math.min(1.4, cam.tPitch + (e.clientY - cam.py) * 0.0065));
       cam.px = e.clientX; cam.py = e.clientY;
     });
     window.addEventListener('mouseup', function () { cam.dragging = false; });
     container.addEventListener('wheel', function (e) {
       e.preventDefault();
       if (state.qrMode) return;
-      cam.tDist = Math.max(22, Math.min(65, cam.tDist + e.deltaY * 0.03));
+      cam.tDist = Math.max(20, Math.min(65, cam.tDist + e.deltaY * 0.035));
     }, { passive: false });
 
-    // Touch
+    // Mobile Touch Orbit Controls
     container.addEventListener('touchstart', function (e) {
       if (e.touches.length === 1) {
         cam.dragging = true; cam.px = e.touches[0].clientX; cam.py = e.touches[0].clientY;
@@ -424,14 +659,15 @@ if (!window.THREE) {
     }, { passive: true });
     window.addEventListener('touchmove', function (e) {
       if (!cam.dragging || e.touches.length !== 1 || state.qrMode) return;
-      cam.tYaw   -= (e.touches[0].clientX - cam.px) * 0.009;
-      cam.tPitch  = Math.max(0.18, Math.min(1.4, cam.tPitch + (e.touches[0].clientY - cam.py) * 0.009));
+      cam.tYaw  -= (e.touches[0].clientX - cam.px) * 0.0085;
+      cam.tPitch = Math.max(0.15, Math.min(1.4, cam.tPitch + (e.touches[0].clientY - cam.py) * 0.0085));
       cam.px = e.touches[0].clientX; cam.py = e.touches[0].clientY;
     }, { passive: true });
     window.addEventListener('touchend', function () { cam.dragging = false; });
 
+    // Tap to Toggle QR Mode
     container.addEventListener('click', function () {
-      setQRMode(!state.qrMode);
+      toggleQRView();
     });
 
     window.addEventListener('resize', function () {
@@ -456,7 +692,7 @@ if (!window.THREE) {
     }
   }
 
-  // ── Isometric Stone Platform ───────────────────────────────────────────────
+  // ── 1. Floating Zen Garden Platform with Chamfered Stone Edge ──────────────
   function buildPlatform(seasonCfg, qrSize) {
     var THREE = window.THREE;
     clearGroup(platformGroup);
@@ -465,62 +701,77 @@ if (!window.THREE) {
     var platSize = (qrSize + 4) * bs;
     var half = platSize / 2;
 
-    var slabGeo = new THREE.BoxGeometry(platSize, 1.2, platSize);
+    // Main sculpted stone platform slab
+    var slabGeo = new THREE.BoxGeometry(platSize, 1.25, platSize);
     var slabMat = new THREE.MeshStandardMaterial({
       color: seasonCfg.groundColor,
-      roughness: 0.88,
-      metalness: 0.02
+      roughness: 0.85,
+      metalness: 0.03
     });
     var slab = new THREE.Mesh(slabGeo, slabMat);
-    slab.position.y = -0.6;
+    slab.position.y = -0.625;
     slab.receiveShadow = true;
     platformGroup.add(slab);
 
-    var rimGeo = new THREE.BoxGeometry(platSize + 0.3, 0.4, platSize + 0.3);
-    var rimMat = new THREE.MeshStandardMaterial({
+    // Architectural beveled stone base pedestal
+    var baseGeo = new THREE.BoxGeometry(platSize + 0.45, 0.4, platSize + 0.45);
+    var baseMat = new THREE.MeshStandardMaterial({
       color: seasonCfg.groundEdge,
-      roughness: 0.95
+      roughness: 0.94
     });
-    var rim = new THREE.Mesh(rimGeo, rimMat);
-    rim.position.y = -0.8;
-    platformGroup.add(rim);
+    var base = new THREE.Mesh(baseGeo, baseMat);
+    base.position.y = -0.85;
+    base.receiveShadow = true;
+    platformGroup.add(base);
 
-    // 3D Grass clumps along borders
+    // Decorative Zen Garden Grass Clumps & Flowers around the perimeter
     var grassMat = new THREE.MeshStandardMaterial({
       color: seasonCfg.grassColor,
-      roughness: 0.7,
+      roughness: 0.68,
       flatShading: true
     });
-    var rng = makeRng(1234);
+    var flowerMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.4
+    });
 
-    function addGrass(gx, gz) {
+    var rng = makeRng(8821);
+
+    function addGrassClump(gx, gz) {
       var clump = new THREE.Group();
       clump.position.set(gx, 0.01, gz);
-      var blades = 3 + Math.floor(rng() * 3);
+      var blades = 4 + Math.floor(rng() * 4);
       for (var b = 0; b < blades; b++) {
-        var h = 0.45 + rng() * 0.55;
-        var bladeGeo = new THREE.ConeGeometry(0.08 + rng() * 0.05, h, 4);
-        var bladeMesh = new THREE.Mesh(bladeGeo, grassMat);
-        bladeMesh.position.set((rng()-0.5)*0.25, h/2, (rng()-0.5)*0.25);
-        bladeMesh.rotation.z = (rng()-0.5)*0.4;
-        bladeMesh.rotation.x = (rng()-0.5)*0.4;
-        clump.add(bladeMesh);
+        var h = 0.4 + rng() * 0.55;
+        var bladeGeo = new THREE.ConeGeometry(0.06 + rng() * 0.04, h, 4);
+        var blade = new THREE.Mesh(bladeGeo, grassMat);
+        blade.position.set((rng()-0.5)*0.22, h/2, (rng()-0.5)*0.22);
+        blade.rotation.z = (rng()-0.5)*0.45;
+        blade.rotation.x = (rng()-0.5)*0.45;
+        clump.add(blade);
+      }
+      // Occasional tiny wild garden flower
+      if (rng() > 0.6) {
+        var flGeo = new THREE.SphereGeometry(0.08, 6, 6);
+        var fl = new THREE.Mesh(flGeo, flowerMat);
+        fl.position.set((rng()-0.5)*0.18, 0.48, (rng()-0.5)*0.18);
+        clump.add(fl);
       }
       platformGroup.add(clump);
     }
 
-    var edgeDist = half - 0.4;
-    for (var x = -edgeDist; x <= edgeDist; x += 1.0) {
-      if (rng() > 0.25) addGrass(x, -edgeDist);
-      if (rng() > 0.25) addGrass(x,  edgeDist);
+    var edgeDist = half - 0.45;
+    for (var x = -edgeDist; x <= edgeDist; x += 0.95) {
+      if (rng() > 0.2) addGrassClump(x, -edgeDist);
+      if (rng() > 0.2) addGrassClump(x,  edgeDist);
     }
-    for (var z = -edgeDist; z <= edgeDist; z += 1.0) {
-      if (rng() > 0.25) addGrass(-edgeDist, z);
-      if (rng() > 0.25) addGrass( edgeDist, z);
+    for (var z = -edgeDist; z <= edgeDist; z += 0.95) {
+      if (rng() > 0.2) addGrassClump(-edgeDist, z);
+      if (rng() > 0.2) addGrassClump( edgeDist, z);
     }
   }
 
-  // ── Pavement QR Code ───────────────────────────────────────────────────────
+  // ── 2. Pavement QR Code Mosaic ─────────────────────────────────────────────
   function buildQRPavement(url, seasonCfg, dataColorHex) {
     var THREE = window.THREE;
     clearGroup(qrGroup);
@@ -553,11 +804,12 @@ if (!window.THREE) {
       }
 
       var blockH = 0.28;
-      var geo = new THREE.BoxGeometry(bs * 0.95, blockH, bs * 0.95);
+      // High-definition beveled stone tiles
+      var geo = new THREE.BoxGeometry(bs * 0.94, blockH, bs * 0.94);
 
-      var lightMat  = new THREE.MeshStandardMaterial({ color: 0xf5f0e6, roughness: 0.9 });
-      var finderMat = new THREE.MeshStandardMaterial({ color: seasonCfg.finderColor, roughness: 0.65, flatShading: true });
-      var dataMat   = new THREE.MeshStandardMaterial({ color: dataColorHex, roughness: 0.65, flatShading: true });
+      var lightMat  = new THREE.MeshStandardMaterial({ color: 0xf5f1e8, roughness: 0.92 });
+      var finderMat = new THREE.MeshStandardMaterial({ color: seasonCfg.finderColor, roughness: 0.55, flatShading: true });
+      var dataMat   = new THREE.MeshStandardMaterial({ color: dataColorHex, roughness: 0.55, flatShading: true });
 
       var lightMesh  = new THREE.InstancedMesh(geo, lightMat, lightCount);
       var finderMesh = new THREE.InstancedMesh(geo, finderMat, finderCount);
@@ -596,31 +848,74 @@ if (!window.THREE) {
 
       return size;
     } catch(e) {
-      console.warn("QR generation error:", e);
+      console.warn("QR pavement error:", e);
       return 29;
     }
   }
 
-  // ── Realistic Multi-Tier Organic Tree ──────────────────────────────────────
-  function buildRealisticTree(seasonCfg, leafColorHex, seed) {
+  // ── 3. Photorealistic Botanical Tree with Natural Gesture & 1,600+ Petals ──
+  function buildHyperRealisticTree(seasonCfg, leafColorHex, seed) {
     var THREE = window.THREE;
     clearGroup(treeGroup);
+    clearGroup(fallenPetalsGroup);
 
     var rng = makeRng(seed);
 
-    // Realistic Bark Material
-    var trunkMat = new THREE.MeshStandardMaterial({
+    // High quality organic bark material with subtle wood specular
+    var barkMat = new THREE.MeshStandardMaterial({
       color: seasonCfg.trunkColor,
       roughness: 0.88,
       metalness: 0.05,
       flatShading: true
     });
 
-    // 1. Organic Branching Trunk Network
-    var branches = [];
     var leafClusterPositions = [];
 
-    function addBranch(ox, oy, oz, dx, dy, dz, len, rad, depth) {
+    // 1. Organic Root Flare Buttresses gripping the stone ground
+    var numRoots = 5;
+    for (var ri = 0; ri < numRoots; ri++) {
+      var rAngle = (ri / numRoots) * Math.PI * 2 + (rng() - 0.5) * 0.4;
+      var rLen   = 1.1 + rng() * 0.5;
+      var rootGeo = new THREE.CylinderGeometry(0.18, 0.38, rLen, 6);
+      var rootMesh = new THREE.Mesh(rootGeo, barkMat);
+      rootMesh.position.set(
+        Math.cos(rAngle) * (rLen * 0.38),
+        0.18,
+        Math.sin(rAngle) * (rLen * 0.38)
+      );
+      rootMesh.rotation.y = -rAngle;
+      rootMesh.rotation.z = 0.55 + rng() * 0.15;
+      rootMesh.castShadow = true;
+      rootMesh.receiveShadow = true;
+      treeGroup.add(rootMesh);
+    }
+
+    // 2. Segmented Curved Trunk with Natural Bonsai / Sakura Gesture
+    var trunkPoints = [
+      { x: 0.00, y: 0.00, z: 0.00, r: 0.62 },
+      { x: 0.12, y: 0.95, z: 0.08, r: 0.52 },
+      { x: -0.08, y: 1.90, z: 0.14, r: 0.44 },
+      { x: 0.06, y: 2.85, z: -0.06, r: 0.38 },
+      { x: 0.00, y: 3.80, z: 0.00, r: 0.32 }
+    ];
+
+    for (var si = 0; si < trunkPoints.length - 1; si++) {
+      var p1 = trunkPoints[si];
+      var p2 = trunkPoints[si + 1];
+      var segLen = Math.sqrt(Math.pow(p2.x-p1.x,2) + Math.pow(p2.y-p1.y,2) + Math.pow(p2.z-p1.z,2));
+      var segGeo = new THREE.CylinderGeometry(p2.r, p1.r, segLen, 8);
+      var segMesh = new THREE.Mesh(segGeo, barkMat);
+      segMesh.position.set((p1.x + p2.x)/2, (p1.y + p2.y)/2, (p1.z + p2.z)/2);
+
+      var dir = new THREE.Vector3(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z).normalize();
+      segMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
+      segMesh.castShadow = true;
+      segMesh.receiveShadow = true;
+      treeGroup.add(segMesh);
+    }
+
+    // 3. Multi-Tiered Organic Branching Scaffold
+    function addBough(ox, oy, oz, dx, dy, dz, len, rad, depth) {
       var mag = Math.sqrt(dx*dx + dy*dy + dz*dz);
       dx /= mag; dy /= mag; dz /= mag;
 
@@ -628,91 +923,99 @@ if (!window.THREE) {
       var ey = oy + dy * len;
       var ez = oz + dz * len;
 
-      var mx = (ox + ex) / 2;
-      var my = (oy + ey) / 2;
-      var mz = (oz + ez) / 2;
-
-      // Curved cylinder branch
-      var bGeo = new THREE.CylinderGeometry(rad * 0.72, rad, len, 7);
-      var bMesh = new THREE.Mesh(bGeo, trunkMat);
-      bMesh.position.set(mx, my, mz);
+      var bGeo = new THREE.CylinderGeometry(rad * 0.72, rad, len, 6);
+      var bMesh = new THREE.Mesh(bGeo, barkMat);
+      bMesh.position.set((ox + ex)/2, (oy + ey)/2, (oz + ez)/2);
       bMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), new THREE.Vector3(dx,dy,dz).normalize());
       bMesh.castShadow = true;
       bMesh.receiveShadow = true;
       treeGroup.add(bMesh);
 
-      // Collect endpoints for dense foliage clusters
-      if (depth >= 3 || len < 1.2) {
-        var numLeaves = 6 + Math.floor(rng() * 8);
-        for (var k = 0; k < numLeaves; k++) {
+      // Collect endpoints for dense micro-petal spray clusters
+      if (depth >= 2 || len < 1.1) {
+        var clustersAtTip = 16 + Math.floor(rng() * 14);
+        for (var k = 0; k < clustersAtTip; k++) {
           leafClusterPositions.push({
-            x: ex + (rng() - 0.5) * 1.4,
-            y: ey + (rng() - 0.4) * 1.1,
-            z: ez + (rng() - 0.5) * 1.4,
-            scale: 0.45 + rng() * 0.45,
+            x: ex + (rng() - 0.5) * 1.5,
+            y: ey + (rng() - 0.45) * 1.3,
+            z: ez + (rng() - 0.5) * 1.5,
+            scale: 0.32 + rng() * 0.35,
             tier: depth
           });
         }
       }
 
-      if (depth >= 4 || rad < 0.07) return;
+      if (depth >= 4 || rad < 0.06) return;
 
-      var childCount = depth === 0 ? 4 : (rng() > 0.35 ? 3 : 2);
-      for (var i = 0; i < childCount; i++) {
-        var spread = 0.42 + rng() * 0.32;
-        var angle = (i / childCount) * Math.PI * 2 + (rng() - 0.5) * 0.6;
+      var childCount = depth === 0 ? 5 : (rng() > 0.3 ? 3 : 2);
+      for (var c = 0; c < childCount; c++) {
+        var spread = 0.45 + rng() * 0.35;
+        var angle = (c / childCount) * Math.PI * 2 + (rng() - 0.5) * 0.5;
         var ndx = dx + Math.cos(angle) * spread;
-        var ndy = dy + 0.18 + rng() * 0.28;
+        var ndy = dy + 0.15 + rng() * 0.32;
         var ndz = dz + Math.sin(angle) * spread;
-        addBranch(ex, ey, ez, ndx, ndy, ndz, len * (0.68 + rng()*0.08), rad * (0.64 + rng()*0.06), depth + 1);
+        addBough(ex, ey, ez, ndx, ndy, ndz, len * (0.68 + rng()*0.08), rad * (0.64 + rng()*0.05), depth + 1);
       }
     }
 
-    // Root trunk
-    addBranch(0, 0, 0, 0, 1, 0, 3.4, 0.58, 0);
+    // 5 primary scaffold limbs branching outward and upward from the top of the trunk
+    var forkOrigin = trunkPoints[trunkPoints.length - 1];
+    var primaryLimbs = 5;
+    for (var pi = 0; pi < primaryLimbs; pi++) {
+      var angle = (pi / primaryLimbs) * Math.PI * 2 + (rng() - 0.5) * 0.4;
+      var ldx = Math.cos(angle) * 0.72;
+      var ldy = 0.55 + rng() * 0.35;
+      var ldz = Math.sin(angle) * 0.72;
+      addBough(forkOrigin.x, forkOrigin.y, forkOrigin.z, ldx, ldy, ldz, 2.2 + rng() * 0.5, 0.28, 0);
+    }
 
-    // Additional crown fill positions for volumetric dome
-    var crownCenterY = 6.2;
-    for (var c = 0; c < 260; c++) {
+    // Secondary mid-trunk bough for lush volumetric fullness
+    addBough(trunkPoints[2].x, trunkPoints[2].y, trunkPoints[2].z, -0.65, 0.45, 0.4, 1.8, 0.22, 1);
+    addBough(trunkPoints[3].x, trunkPoints[3].y, trunkPoints[3].z, 0.55, 0.5, -0.5, 1.7, 0.2, 1);
+
+    // 4. Volumetric Crown Dome & Weeping Outer Cherry Blossom Sprays
+    var crownCenterY = 5.8;
+    for (var v = 0; v < 420; v++) {
       var theta = rng() * Math.PI * 2;
-      var phi   = rng() * Math.PI * 0.6;
-      var r     = 1.5 + rng() * 3.2;
+      var phi   = rng() * Math.PI * 0.58;
+      var rad   = 1.2 + rng() * 3.4;
       leafClusterPositions.push({
-        x: Math.sin(phi) * Math.cos(theta) * r,
-        y: crownCenterY + Math.cos(phi) * (r * 0.75) + (rng() - 0.5) * 1.2,
-        z: Math.sin(phi) * Math.sin(theta) * r,
-        scale: 0.55 + rng() * 0.5,
+        x: Math.sin(phi) * Math.cos(theta) * rad,
+        y: crownCenterY + Math.cos(phi) * (rad * 0.7) + (rng() - 0.5) * 1.1,
+        z: Math.sin(phi) * Math.sin(theta) * rad,
+        scale: 0.35 + rng() * 0.35,
         tier: 5
       });
     }
 
-    // Drooping weeping outer boughs (characteristic of authentic Sakura / willow)
-    for (var w = 0; w < 120; w++) {
+    // Weeping outer boughs cascading gently downward (authentic Sakura feature)
+    for (var w = 0; w < 220; w++) {
       var wTheta = rng() * Math.PI * 2;
-      var wR = 3.2 + rng() * 1.8;
+      var wRad   = 2.8 + rng() * 2.2;
       leafClusterPositions.push({
-        x: Math.cos(wTheta) * wR,
-        y: 3.8 + rng() * 2.2,
-        z: Math.sin(wTheta) * wR,
-        scale: 0.35 + rng() * 0.4,
+        x: Math.cos(wTheta) * wRad,
+        y: 3.4 + rng() * 2.4,
+        z: Math.sin(wTheta) * wRad,
+        scale: 0.28 + rng() * 0.32,
         tier: 6
       });
     }
 
-    // 2. High-Density Instanced Botanical Foliage
+    // 5. Instanced Micro-Petal Blossom Cloud (1,600+ elements)
     var totalClusters = leafClusterPositions.length;
-    var clusterGeo = new THREE.DodecahedronGeometry(0.7, 1);
+    // Multi-faceted soft botanical blossom geometry
+    var clusterGeo = new THREE.IcosahedronGeometry(0.52, 1);
 
-    var foliageMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff, // tinted via instanced colors
-      roughness: 0.52,
+    var blossomMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.42,
       metalness: 0.02,
       flatShading: true
     });
 
-    var foliageMesh = new THREE.InstancedMesh(clusterGeo, foliageMat, totalClusters);
-    foliageMesh.castShadow = true;
-    foliageMesh.receiveShadow = true;
+    var blossomMesh = new THREE.InstancedMesh(clusterGeo, blossomMat, totalClusters);
+    blossomMesh.castShadow = true;
+    blossomMesh.receiveShadow = true;
 
     var dummy = new THREE.Object3D();
     var baseCol = new THREE.Color(leafColorHex);
@@ -723,110 +1026,142 @@ if (!window.THREE) {
       var lp = leafClusterPositions[idx];
       dummy.position.set(lp.x, lp.y, lp.z);
       dummy.rotation.set(rng() * Math.PI, rng() * Math.PI, rng() * Math.PI);
-      dummy.scale.set(lp.scale, lp.scale * (0.85 + rng() * 0.3), lp.scale);
+      dummy.scale.set(lp.scale, lp.scale * (0.8 + rng() * 0.35), lp.scale);
       dummy.updateMatrix();
-      foliageMesh.setMatrixAt(idx, dummy.matrix);
+      blossomMesh.setMatrixAt(idx, dummy.matrix);
 
-      // Natural botanical color variation:
+      // Natural gradient variation across depth & sun exposure
       var blend = rng();
       var cCol = new THREE.Color();
-      if (blend < 0.6) {
+      if (blend < 0.55) {
         cCol.copy(baseCol).lerp(altCol, rng() * 0.45);
-      } else if (blend < 0.88) {
-        cCol.copy(altCol).lerp(baseCol, rng() * 0.3);
+      } else if (blend < 0.85) {
+        cCol.copy(altCol).lerp(baseCol, rng() * 0.35);
       } else {
-        cCol.copy(highCol).lerp(altCol, 0.5);
+        cCol.copy(highCol).lerp(altCol, 0.4);
       }
-      foliageMesh.setColorAt(idx, cCol);
+      blossomMesh.setColorAt(idx, cCol);
     }
 
-    foliageMesh.instanceMatrix.needsUpdate = true;
-    if (foliageMesh.instanceColor) foliageMesh.instanceColor.needsUpdate = true;
-    treeGroup.add(foliageMesh);
+    blossomMesh.instanceMatrix.needsUpdate = true;
+    if (blossomMesh.instanceColor) blossomMesh.instanceColor.needsUpdate = true;
+    treeGroup.add(blossomMesh);
+
+    // 6. Scattered Fallen Petals around the tree base on the pavement
+    var numFallen = 90;
+    var petalGeo = new THREE.CircleGeometry(0.12, 5);
+    var petalMat = new THREE.MeshStandardMaterial({
+      color: leafColorHex,
+      roughness: 0.5,
+      side: THREE.DoubleSide
+    });
+    var fallenMesh = new THREE.InstancedMesh(petalGeo, petalMat, numFallen);
+    var fDummy = new THREE.Object3D();
+
+    for (var f = 0; f < numFallen; f++) {
+      var fRad = 0.8 + rng() * 4.2;
+      var fAng = rng() * Math.PI * 2;
+      fDummy.position.set(Math.cos(fAng) * fRad, 0.29, Math.sin(fAng) * fRad);
+      fDummy.rotation.set(-Math.PI / 2, 0, rng() * Math.PI * 2);
+      var sc = 0.5 + rng() * 0.6;
+      fDummy.scale.set(sc, sc, sc);
+      fDummy.updateMatrix();
+      fallenMesh.setMatrixAt(f, fDummy.matrix);
+    }
+    fallenMesh.instanceMatrix.needsUpdate = true;
+    fallenPetalsGroup.add(fallenMesh);
   }
 
-  // ── Weather Particles ──────────────────────────────────────────────────────
+  // ── 4. Weather Particles (Drifting Cherry Petals / Summer Leaves / Rain) ─────
   function buildParticles(seasonCfg, particleColorHex) {
     var THREE = window.THREE;
     if (particleMesh) scene.remove(particleMesh);
 
     var isRain = seasonCfg.weatherType === 'rain';
-    var count = isRain ? 280 : 160;
+    var count = isRain ? 320 : 180;
     var pos = new Float32Array(count * 3);
 
     for (var i = 0; i < count; i++) {
       pos[i*3]     = (Math.random() - 0.5) * 32;
-      pos[i*3 + 1] = Math.random() * 24 + 1;
+      pos[i*3 + 1] = Math.random() * 26 + 1;
       pos[i*3 + 2] = (Math.random() - 0.5) * 32;
     }
 
     var geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
 
-    var size = isRain ? 0.24 : 0.42;
+    var size = isRain ? 0.22 : 0.44;
     var mat = new THREE.PointsMaterial({
       color: particleColorHex,
       size: size,
       transparent: true,
-      opacity: 0.85
+      opacity: 0.88
     });
 
     particleMesh = new THREE.Points(geo, mat);
     scene.add(particleMesh);
   }
 
-  // ── Rebuild Scene ──────────────────────────────────────────────────────────
+  // ── 5. Rebuild Scene ───────────────────────────────────────────────────────
   function rebuildScene() {
     if (!scene) return;
     var s = SEASONS[state.season];
     var dataColorHex = (PALETTES[state.palette] && PALETTES[state.palette].hex) || s.leafColor;
 
+    scene.background.set(s.skyColor);
+    scene.fog.color.set(s.skyColor);
+
     var qrSize = buildQRPavement(state.url, s, dataColorHex);
     buildPlatform(s, qrSize);
-    buildRealisticTree(s, dataColorHex, state.seed);
+    buildHyperRealisticTree(s, dataColorHex, state.seed);
     buildParticles(s, s.particleColor);
 
     updateViewMode();
   }
 
-  function setQRMode(active) {
-    state.qrMode = active;
+  function toggleQRView() {
+    state.qrMode = !state.qrMode;
+    playOrganicChime();
     updateViewMode();
   }
 
   function updateViewMode() {
-    var pill = document.getElementById('toggle-pill');
+    var pillLabel = document.getElementById('pill-label');
+    var scanOverlay = document.getElementById('scan-overlay');
+
     if (state.qrMode) {
-      cam.tPitch = 0.001; // top-down
+      cam.tPitch = 0.001; // direct 90 deg overhead
       cam.tYaw   = 0.0;
       cam.tDist  = 34;
-      pill.textContent = 'Tap to see the tree';
+      pillLabel.textContent = 'Tap to see 3D Magic Tree';
+      scanOverlay.classList.add('active');
     } else {
-      cam.tPitch = 0.76;
-      cam.tYaw   = 0.785; // isometric diamond
-      cam.tDist  = 40;
-      pill.textContent = 'Tap the tree to see QR code';
+      cam.tPitch = 0.78;  // isometric diamond
+      cam.tYaw   = 0.785;
+      cam.tDist  = 38;
+      pillLabel.textContent = 'Tap tree to view QR code';
+      scanOverlay.classList.remove('active');
     }
   }
 
-  // ── Animate Loop with Natural Organic Wind ─────────────────────────────────
+  // ── 6. Animate Loop with Multi-Harmonic Wind Bending ────────────────────────
   function animate() {
     requestAnimationFrame(animate);
     var t = clock.getElapsedTime();
 
-    // Smooth camera lerp
-    cam.pitch += (cam.tPitch - cam.pitch) * 0.09;
-    cam.yaw   += (cam.tYaw   - cam.yaw)   * 0.09;
-    cam.dist  += (cam.tDist  - cam.dist)  * 0.09;
+    // Smooth camera glide
+    cam.pitch += (cam.tPitch - cam.pitch) * 0.085;
+    cam.yaw   += (cam.tYaw   - cam.yaw)   * 0.085;
+    cam.dist  += (cam.tDist  - cam.dist)  * 0.085;
 
     camera.position.set(
       cam.dist * Math.sin(cam.pitch) * Math.sin(cam.yaw),
       cam.dist * Math.cos(cam.pitch),
       cam.dist * Math.sin(cam.pitch) * Math.cos(cam.yaw)
     );
-    camera.lookAt(0, 1.8, 0);
+    camera.lookAt(0, 1.6, 0);
 
-    // Smooth Tree Growth / Collapse Transition
+    // Smooth Botanical Tree Transition (Grows / Shrinks gracefully)
     var targetScale = state.qrMode ? 0.0001 : 1.0;
     treeScale += (targetScale - treeScale) * 0.12;
 
@@ -834,16 +1169,20 @@ if (!window.THREE) {
       treeGroup.scale.set(treeScale, treeScale, treeScale);
       treeGroup.visible = treeScale > 0.01;
 
-      // Realistic Bending Wind Sway (not rigid rotation!)
-      if (!state.qrMode && treeScale > 0.8) {
-        var swayZ = (Math.sin(t * 1.1) * 0.014 + Math.sin(t * 2.4) * 0.006);
-        var swayX = (Math.cos(t * 0.85) * 0.012 + Math.cos(t * 1.9) * 0.005);
+      // Realistic Multi-Harmonic Wind Swaying (Anchored at root)
+      if (!state.qrMode && treeScale > 0.75) {
+        var swayZ = Math.sin(t * 1.05) * 0.012 + Math.sin(t * 2.3) * 0.005;
+        var swayX = Math.cos(t * 0.8) * 0.01 + Math.cos(t * 1.8) * 0.004;
         treeGroup.rotation.z = swayZ;
         treeGroup.rotation.x = swayX;
       }
     }
 
-    // Weather Particles Animation
+    if (fallenPetalsGroup) {
+      fallenPetalsGroup.visible = !state.qrMode;
+    }
+
+    // Dynamic Weather Particles Animation
     if (particleMesh) {
       var s = SEASONS[state.season];
       var pts = particleMesh.geometry.attributes.position.array;
@@ -852,18 +1191,18 @@ if (!window.THREE) {
 
       for (var i = 0; i < n; i++) {
         if (isRain) {
-          pts[i*3 + 1] -= 0.28; // falling rain
+          pts[i*3 + 1] -= 0.32;
           pts[i*3]     += 0.025;
         } else {
-          // Gentle floating petals / leaves drifting on wind vortex
-          pts[i*3]     += Math.sin(t * 0.7 + i * 1.2) * 0.016 + 0.006;
-          pts[i*3 + 1] -= 0.028 + Math.sin(t * 0.5 + i) * 0.006;
-          pts[i*3 + 2] += Math.cos(t * 0.6 + i * 1.5) * 0.014;
+          // Drifting floating cherry blossom petals in gentle breeze
+          pts[i*3]     += Math.sin(t * 0.75 + i * 1.1) * 0.018 + 0.008;
+          pts[i*3 + 1] -= 0.026 + Math.sin(t * 0.6 + i) * 0.006;
+          pts[i*3 + 2] += Math.cos(t * 0.65 + i * 1.4) * 0.016;
         }
 
         if (pts[i*3 + 1] < 0) {
           pts[i*3]     = (Math.random() - 0.5) * 32;
-          pts[i*3 + 1] = 18 + Math.random() * 6;
+          pts[i*3 + 1] = 20 + Math.random() * 6;
           pts[i*3 + 2] = (Math.random() - 0.5) * 32;
         }
       }
@@ -873,7 +1212,7 @@ if (!window.THREE) {
     renderer.render(scene, camera);
   }
 
-  // ── UI Listeners ───────────────────────────────────────────────────────────
+  // ── 7. UI Controls & Interactive Listeners ─────────────────────────────────
   var paletteContainer = document.getElementById('palette-row');
   PALETTES.forEach(function (p, i) {
     var b = document.createElement('button');
@@ -882,6 +1221,7 @@ if (!window.THREE) {
     b.title = p.name;
     b.addEventListener('click', function () {
       state.palette = i;
+      playOrganicChime();
       document.querySelectorAll('.swatch').forEach(function (s, j) {
         s.classList.toggle('active', j === i);
       });
@@ -890,19 +1230,20 @@ if (!window.THREE) {
     paletteContainer.appendChild(b);
   });
 
-  document.querySelectorAll('.season-btn').forEach(function (btn) {
+  document.querySelectorAll('.season-tab').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      var sIdx = parseInt(btn.dataset.s);
+      var sIdx = parseInt(btn.dataset.season);
       state.season = sIdx;
-      document.querySelectorAll('.season-btn').forEach(function (b, j) {
+      playOrganicChime();
+      document.querySelectorAll('.season-tab').forEach(function (b, j) {
         b.classList.toggle('active', j === sIdx);
       });
       rebuildScene();
     });
   });
 
-  document.getElementById('toggle-pill').addEventListener('click', function () {
-    setQRMode(!state.qrMode);
+  document.getElementById('action-pill').addEventListener('click', function () {
+    toggleQRView();
   });
 
   var urlInput = document.getElementById('url-input');
@@ -913,12 +1254,24 @@ if (!window.THREE) {
     if (!v) return;
     state.url = cleanUrl(v);
     urlInput.value = state.url;
+    playOrganicChime();
     rebuildScene();
   }
+
+  document.getElementById('btn-generate').addEventListener('click', handleUrlUpdate);
   urlInput.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') handleUrlUpdate();
   });
 
+  // Sound Toggle Button
+  var soundBtn = document.getElementById('btn-sound');
+  soundBtn.addEventListener('click', function () {
+    state.soundEnabled = !state.soundEnabled;
+    soundBtn.classList.toggle('active', state.soundEnabled);
+    if (state.soundEnabled) playOrganicChime();
+  });
+
+  // Share URL Generator
   function getShareUrl() {
     try {
       var q = btoa(state.season + '' + state.palette + (state.url || ''));
@@ -926,11 +1279,13 @@ if (!window.THREE) {
     } catch(e) { return location.href; }
   }
 
-  document.getElementById('btn-share').addEventListener('click', function () {
+  function openShareModal() {
     handleUrlUpdate();
     document.getElementById('share-url').value = getShareUrl();
     document.getElementById('modal-bg').classList.add('open');
-  });
+  }
+
+  document.getElementById('btn-share-top').addEventListener('click', openShareModal);
   document.getElementById('modal-bg').addEventListener('click', function (e) {
     if (e.target === this) this.classList.remove('open');
   });
@@ -942,61 +1297,38 @@ if (!window.THREE) {
     var btn = this;
     navigator.clipboard.writeText(val).then(function () {
       btn.textContent = 'Copied!';
-      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+      setTimeout(function () { btn.textContent = 'Copy Link'; }, 2000);
     }).catch(function () {
       document.getElementById('share-url').select();
       document.execCommand('copy');
     });
   });
 
-  var audioCtx = null, audioSrc = null;
-  document.getElementById('btn-sound').addEventListener('click', function () {
-    var btn = this;
-    if (state.muted) {
-      try {
-        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        var buf  = audioCtx.createBuffer(1, audioCtx.sampleRate * 3, audioCtx.sampleRate);
-        var data = buf.getChannelData(0);
-        for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-        audioSrc = audioCtx.createBufferSource();
-        audioSrc.buffer = buf; audioSrc.loop = true;
-        var f = audioCtx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 350; f.Q.value = 2.5;
-        var g = audioCtx.createGain();         g.gain.value = 0.05;
-        audioSrc.connect(f); f.connect(g); g.connect(audioCtx.destination);
-        audioSrc.start();
-        state.muted = false;
-        btn.classList.add('active');
-        btn.title = 'Sound On';
-        document.getElementById('sound-icon').innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>';
-      } catch(e) {}
-    } else {
-      if (audioSrc) { try { audioSrc.stop(); } catch(e){} audioSrc = null; }
-      state.muted = true;
-      btn.classList.remove('active');
-      btn.title = 'Sound Off';
-      document.getElementById('sound-icon').innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
-    }
+  // Info Modal
+  document.getElementById('btn-info').addEventListener('click', function () {
+    document.getElementById('info-modal-bg').classList.add('open');
+  });
+  document.getElementById('info-modal-bg').addEventListener('click', function (e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+  document.getElementById('info-modal-close').addEventListener('click', function () {
+    document.getElementById('info-modal-bg').classList.remove('open');
   });
 
-  document.getElementById('info-btn').addEventListener('click', function () {
-    alert("CruseQR Magic Tree\\n\\nTurn any URL into a living 3D procedural tree rooted in a scannable QR code pavement.\\n\\n• Tap the tree to switch to the flat top-down scanner\\n• Pick Spring, Summer, or Autumn themes\\n• Customize petal colors and share your unique tree!");
-  });
-
-  function waitInit() {
-    if (window.THREE && window.qrcode) {
-      initThree();
-    } else {
-      setTimeout(waitInit, 60);
-    }
+  // Launch Three.js when loaded
+  if (window.THREE) {
+    initThree();
+  } else {
+    window.addEventListener('load', function() {
+      if (window.THREE) initThree();
+    });
   }
-  waitInit();
-
 })();
 </script>
+
 </body>
 </html>
 `;
 
-fs.writeFileSync(path.join(__dirname, "../gh-pages/index.html"), html);
-console.log("Successfully rebuilt realistic tree in gh-pages/index.html!");
+fs.writeFileSync(path.join(__dirname, "../gh-pages/index.html"), html, "utf8");
+console.log("Successfully rebuilt hyper-realistic tree in gh-pages/index.html!");
