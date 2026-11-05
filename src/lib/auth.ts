@@ -47,72 +47,72 @@ export function verifyToken(token: string): SessionUser | null {
   }
 }
 
-/**
- * Universal Session/Auth Resolver
- * Supports:
- * 1. HTTP-Only Cookie session
- * 2. Header `Authorization: Bearer <jwt_or_api_key>`
- * 3. Header `x-api-key: cqr_live_<userId>`
- */
-export async function getSession(request?: Request): Promise<SessionUser | null> {
-  try {
-    // 1. Check API Key or Bearer Token from headers
-    let authHeader: string | null = null;
-    let apiKeyHeader: string | null = null;
+  /**
+   * Universal Session/Auth Resolver
+   * Supports:
+   * 1. HTTP-Only Cookie session
+   * 2. Header `Authorization: Bearer <jwt_or_api_key>`
+   * 3. Header `x-api-key: cqr_live_<userId>`
+   */
+  export async function getSession(request?: Request): Promise<SessionUser | null> {
+    try {
+      // 1. Check API Key or Bearer Token from headers
+      let authHeader: string | null = null;
+      let apiKeyHeader: string | null = null;
 
-    if (request) {
-      authHeader = request.headers.get("authorization");
-      apiKeyHeader = request.headers.get("x-api-key");
-    } else {
-      const h = headers();
-      authHeader = h.get("authorization");
-      apiKeyHeader = h.get("x-api-key");
-    }
-
-    const tokenOrKey = apiKeyHeader || (authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null);
-
-    if (tokenOrKey) {
-      // Direct API Key pattern: cqr_live_<userId>
-      if (tokenOrKey.startsWith("cqr_live_")) {
-        const userId = tokenOrKey.replace("cqr_live_", "");
-        const user = await prisma.user.findUnique({
-          where: { id: userId },
-          select: { id: true, email: true, name: true, role: true, plan: true, avatar: true },
-        });
-        if (user) return user;
+      if (request) {
+        authHeader = request.headers.get("authorization");
+        apiKeyHeader = request.headers.get("x-api-key");
+      } else {
+        const h = headers();
+        authHeader = h.get("authorization");
+        apiKeyHeader = h.get("x-api-key");
       }
 
-      // Check if it's a JWT token
-      const jwtUser = verifyToken(tokenOrKey);
-      if (jwtUser) return jwtUser;
+      const tokenOrKey = apiKeyHeader || (authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null);
+
+      if (tokenOrKey) {
+        // Direct API Key pattern: cqr_live_<userId>
+        if (tokenOrKey.startsWith("cqr_live_")) {
+          const userId = tokenOrKey.replace("cqr_live_", "");
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, email: true, name: true, role: true, plan: true, avatar: true },
+          });
+          if (user) return user;
+        }
+
+        // Check if it's a JWT token
+        const jwtUser = verifyToken(tokenOrKey);
+        if (jwtUser) return jwtUser;
+      }
+
+      // 2. Fall back to Cookie Session
+      const cookieStore = cookies();
+      const cookieToken = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+      if (cookieToken) {
+        return verifyToken(cookieToken);
+      }
+
+      return null;
+    } catch {
+      return null;
     }
+  }
 
-    // 2. Fall back to Cookie Session
-    const cookieStore = cookies();
-    const cookieToken = cookieStore.get(AUTH_COOKIE_NAME)?.value;
-    if (cookieToken) {
-      return verifyToken(cookieToken);
+  export async function requireAuth(): Promise<SessionUser> {
+    const user = await getSession();
+    if (!user) {
+      throw new Error("UNAUTHORIZED");
     }
-
-    return null;
-  } catch {
-    return null;
+    return user;
   }
-}
 
-export async function requireAuth(): Promise<SessionUser> {
-  const user = await getSession();
-  if (!user) {
-    throw new Error("UNAUTHORIZED");
+  export async function requireAdmin(): Promise<SessionUser> {
+    const user = await requireAuth();
+    if (user.role !== "ADMIN") {
+      throw new Error("FORBIDDEN");
+    }
+    return user;
   }
-  return user;
-}
-
-export async function requireAdmin(): Promise<SessionUser> {
-  const user = await requireAuth();
-  if (user.role !== "ADMIN") {
-    throw new Error("FORBIDDEN");
-  }
-  return user;
-}
 
