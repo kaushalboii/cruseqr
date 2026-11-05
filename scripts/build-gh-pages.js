@@ -6,882 +6,643 @@ const qrcodeLib = fs.readFileSync("/tmp/qrcode-gen.js", "utf8");
 const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CruseQR 3D Magic Tree — Living Procedural 3D QR Code</title>
-  <meta name="description" content="Generate and experience living 3D procedural QR code trees with seasonal themes, falling petals, wind physics, and instant mobile phone scannability." />
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2'%3E%3Cpath d='M3 7V5a2 2 0 0 1 2-2h2'/%3E%3Cpath d='M17 3h2a2 2 0 0 1 2 2v2'/%3E%3Cpath d='M21 17v2a2 2 0 0 1-2 2h-2'/%3E%3Cpath d='M7 21H5a2 2 0 0 1-2-2v-2'/%3E%3Crect width='5' height='5' x='7' y='7' rx='1' fill='%2310b981'/%3E%3C/svg%3E" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <!-- Inlined rock-solid QR Code Generator (zero CDN failures) -->
-  <script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CruseQR Magic Tree — 3D Interactive QR</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;background:#f5ede2;user-select:none;-webkit-user-select:none;}
+  #canvas-container{position:fixed;inset:0;cursor:grab;}
+  #canvas-container:active{cursor:grabbing;}
+  canvas{display:block;width:100%!important;height:100%!important;}
+
+  /* Top bar */
+  #topbar{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;pointer-events:none;}
+  .logo-pill{pointer-events:auto;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.92);border:1px solid #e7e5e4;border-radius:18px;padding:8px 14px;box-shadow:0 2px 12px rgba(0,0,0,0.08);backdrop-filter:blur(12px);}
+  .logo-pill .brand{font-size:14px;font-weight:900;letter-spacing:-0.3px;color:#1c1917;}
+  .logo-pill .accent{color:#d97706;}
+  .logo-pill .badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:999px;padding:2px 8px;}
+  .topbar-actions{pointer-events:auto;display:flex;align-items:center;gap:8px;}
+  .icon-btn{width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,0.92);border:1px solid #e7e5e4;box-shadow:0 2px 8px rgba(0,0,0,0.08);backdrop-filter:blur(12px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.1s,background 0.15s;color:#57534e;}
+  .icon-btn:hover{background:#fff;}
+  .icon-btn:active{transform:scale(0.9);}
+  .scan-btn{height:36px;padding:0 14px;border-radius:12px;background:rgba(255,255,255,0.92);border:1px solid #e7e5e4;box-shadow:0 2px 8px rgba(0,0,0,0.08);backdrop-filter:blur(12px);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#44403c;transition:all 0.15s;}
+  .scan-btn:hover{background:#fff;}
+  .scan-btn.active{background:#1c1917;color:#fff;border-color:#1c1917;}
+  .scan-btn svg{color:#f59e0b;}
+  .share-btn{height:36px;padding:0 14px;border-radius:12px;background:#d97706;border:none;box-shadow:0 2px 8px rgba(217,119,6,0.3);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#fff;transition:all 0.15s;}
+  .share-btn:hover{background:#b45309;}
+  .share-btn:active{transform:scale(0.95);}
+
+  /* Bottom dock */
+  #dock{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:520px;z-index:30;pointer-events:none;}
+  .dock-inner{background:rgba(255,255,255,0.93);border:1px solid #e7e5e4;border-radius:26px;padding:16px;box-shadow:0 8px 40px rgba(0,0,0,0.12);backdrop-filter:blur(20px);pointer-events:auto;}
+  .url-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .url-input{flex:1;padding:10px 14px;border-radius:14px;background:#f5f5f4;border:1px solid #e7e5e4;font-size:12px;font-weight:600;color:#1c1917;outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+  .url-input::placeholder{color:#a8a29e;font-weight:400;}
+  .url-input:focus{border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.15);}
+  .gen-btn{padding:10px 16px;border-radius:14px;background:#1c1917;border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:background 0.15s;}
+  .gen-btn:hover{background:#000;}
+  .gen-btn:active{transform:scale(0.95);}
+  .seasons{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;}
+  .season-btn{padding:8px 4px;border-radius:12px;background:#f5f5f4;border:1px solid transparent;font-size:12px;font-weight:600;color:#57534e;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;transition:all 0.15s;}
+  .season-btn:hover{background:#e7e5e4;}
+  .season-btn.active{background:#fef3c7;border-color:#fcd34d;color:#78350f;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+  .palette-row{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid #e7e5e4;}
+  .palette-label{font-size:11px;font-weight:600;color:#78716c;letter-spacing:0.05em;}
+  .swatches{display:flex;align-items:center;gap:8px;}
+  .swatch{width:20px;height:20px;border-radius:50%;cursor:pointer;transition:transform 0.15s,opacity 0.15s;border:none;opacity:0.8;}
+  .swatch:hover{transform:scale(1.1);opacity:1;}
+  .swatch.active{transform:scale(1.25);box-shadow:0 0 0 2px #fff,0 0 0 4px #1c1917;opacity:1;}
+
+  /* Hint */
+  #hint{position:fixed;bottom:116px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(0,0,0,0.38);font-weight:500;pointer-events:none;white-space:nowrap;}
+
+  /* Share modal */
+  #modal-bg{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px;}
+  #modal-bg.open{display:flex;}
+  #modal{background:#fff;border-radius:28px;padding:24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.25);}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .modal-title{font-size:15px;font-weight:900;color:#1c1917;}
+  .modal-close{font-size:20px;font-weight:700;color:#a8a29e;cursor:pointer;border:none;background:none;line-height:1;padding:0;}
+  .modal-desc{font-size:12px;color:#78716c;margin-bottom:16px;line-height:1.6;}
+  .modal-url-row{display:flex;align-items:center;gap:8px;}
+  #share-url-display{flex:1;padding:10px 12px;border-radius:12px;background:#f5f5f4;border:1px solid #e7e5e4;font-size:11px;font-family:monospace;color:#44403c;outline:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .copy-btn{padding:10px 14px;border-radius:12px;background:#d97706;border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:background 0.15s;}
+  .copy-btn:hover{background:#b45309;}
+</style>
+
+<!-- Inlined standalone QR Code generator (no CDN dependency, zero errors) -->
+<script>
 ${qrcodeLib}
-  </script>
+</script>
+<!-- Three.js r128 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+if (!window.THREE) {
+  document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\\\\/script>');
+}
+</script>
 </head>
-<body class="bg-stone-900 text-stone-100 font-sans antialiased overflow-hidden select-none">
+<body>
 
-  <!-- 3D WebGL Canvas Container -->
-  <div id="canvas-container" class="fixed inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></div>
+<!-- Top Bar -->
+<header id="topbar">
+  <div class="logo-pill">
+    <span class="brand">Cruse<span class="accent">QR</span></span>
+    <span class="badge">Magic Tree</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="btn-sound" title="Ambient Wind">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0 2-2m-2 2-2-2m2 2 2 2"/></svg>
+    </button>
+    <button class="icon-btn" id="btn-reseed" title="Grow New Tree">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+    </button>
+    <button class="icon-btn" id="btn-download" title="Download PNG">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+    </button>
+    <button class="scan-btn" id="btn-scan" title="Toggle Scan View">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"/></svg>
+      <span id="scan-label">Scan QR</span>
+    </button>
+    <button class="share-btn" id="btn-share">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"/></svg>
+      Share
+    </button>
+  </div>
+</header>
 
-  <!-- Top Navigation Bar -->
-  <header class="fixed top-0 left-0 right-0 z-20 flex items-center justify-between px-4 sm:px-6 py-3 bg-stone-950/40 backdrop-blur-md border-b border-white/10 pointer-events-auto">
-    <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m-6-6 6 6 6-6M5 9l7-6 7 6" />
-        </svg>
-      </div>
-      <div>
-        <h1 class="text-sm sm:text-base font-bold tracking-tight text-white flex items-center gap-2">
-          CruseQR Magic Tree
-          <span class="text-[10px] font-medium uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">3D QR</span>
-        </h1>
-        <p class="text-[11px] text-stone-400 hidden sm:block">Inspired by ICQR • Living 3D Procedural Canopy</p>
-      </div>
-    </div>
+<!-- 3D Canvas -->
+<div id="canvas-container"></div>
 
-    <!-- Right Controls -->
-    <div class="flex items-center gap-2 sm:gap-3">
-      <!-- InstaBox Backend Health Badge -->
-      <a id="backend-pill" href="https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech" target="_blank" rel="noopener noreferrer" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-900/80 border border-white/10 text-xs text-stone-300 hover:border-emerald-500/40 transition" title="InstaBox Backend Status">
-        <span id="backend-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-        <span id="backend-text" class="font-mono text-[11px]">Connecting backend...</span>
-      </a>
+<!-- Hint -->
+<div id="hint">Left Click &amp; Drag: Orbit 3D &nbsp;|&nbsp; Scroll: Zoom</div>
 
-      <!-- Ambient Sound Toggle -->
-      <button id="btn-audio" class="p-2 sm:px-3 sm:py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium flex items-center gap-1.5 transition backdrop-blur-sm" title="Toggle Wind Ambiance">
-        <span id="audio-icon">🔇</span>
-        <span class="hidden sm:inline" id="audio-label">Sound Off</span>
+<!-- Bottom Dock -->
+<div id="dock">
+  <div class="dock-inner">
+    <div class="url-row">
+      <input class="url-input" id="url-input" type="text" placeholder="Type or paste any URL..."/>
+      <button class="gen-btn" id="btn-gen">
+        <svg width="13" height="13" fill="none" stroke="#f59e0b" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+        Generate
       </button>
-
-      <!-- Scan Mode (Flat Top-Down View) -->
-      <button id="btn-scan-mode" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-500/25 transition">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-          <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z" />
-        </svg>
-        <span id="scan-mode-label">Scan Mode</span>
-      </button>
     </div>
-  </header>
-
-  <!-- Floating Left Controls (Seasonal Theme & Palettes) -->
-  <div class="fixed left-4 top-20 z-10 flex flex-col gap-3 pointer-events-auto max-w-[210px] sm:max-w-[240px]">
-    <!-- Season Switcher -->
-    <div class="p-2.5 rounded-2xl bg-stone-950/70 backdrop-blur-xl border border-white/10 shadow-2xl flex flex-col gap-1.5">
-      <div class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider px-1">Season</div>
-      <div class="grid grid-cols-2 gap-1.5" id="season-buttons"></div>
+    <div class="seasons" id="seasons">
+      <button class="season-btn active" data-i="0">🌸 Spring</button>
+      <button class="season-btn" data-i="1">🍃 Summer</button>
+      <button class="season-btn" data-i="2">🍂 Autumn</button>
+      <button class="season-btn" data-i="3">❄️ Winter</button>
     </div>
-
-    <!-- Color Palette Picker -->
-    <div class="p-2.5 rounded-2xl bg-stone-950/70 backdrop-blur-xl border border-white/10 shadow-2xl flex flex-col gap-1.5">
-      <div class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider px-1">Palette</div>
-      <div class="flex items-center justify-between px-1 py-1" id="palette-buttons"></div>
+    <div class="palette-row">
+      <span class="palette-label">COLOUR</span>
+      <div class="swatches" id="swatches"></div>
     </div>
+  </div>
+</div>
 
-    <!-- Tree Variations (Seed Randomizer) -->
-    <div class="p-2.5 rounded-2xl bg-stone-950/70 backdrop-blur-xl border border-white/10 shadow-2xl flex flex-col gap-1.5">
-      <div class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider px-1">Branch Form</div>
-      <button id="btn-random-seed" class="w-full py-1.5 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-xs text-white font-medium flex items-center justify-center gap-2 transition">
-        <span>🎲</span> Re-grow Canopy
+<!-- Share Modal -->
+<div id="modal-bg">
+  <div id="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">Share Your Magic Tree 🌸</span>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <p class="modal-desc">Anyone who opens this link will see your exact 3D tree with your custom QR code destination.</p>
+    <div class="modal-url-row">
+      <input class="url-input" id="share-url-display" readonly/>
+      <button class="copy-btn" id="copy-btn">
+        <svg id="copy-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"/></svg>
+        <span id="copy-label">Copy</span>
       </button>
     </div>
   </div>
+</div>
 
-  <!-- Bottom Interactive Bar (URL Input, Dynamic Save, Share, Download) -->
-  <footer class="fixed bottom-4 left-4 right-4 z-20 pointer-events-auto max-w-3xl mx-auto">
-    <div class="p-3 sm:p-4 rounded-2xl bg-stone-950/85 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col gap-2.5">
-      <!-- Target URL Input -->
-      <div class="flex items-center gap-2">
-        <div class="relative flex-1">
-          <input
-            id="target-url-input"
-            type="url"
-            value="https://icqr.com/"
-            placeholder="Enter destination URL (e.g. https://yourdomain.com)"
-            class="w-full pl-3 pr-20 py-2 rounded-xl bg-stone-900/90 border border-white/15 text-xs sm:text-sm text-white placeholder-stone-500 focus:outline-none focus:border-emerald-500 transition font-mono"
-          />
-          <button id="btn-apply-url" class="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold text-xs rounded-lg transition">
-            Update
-          </button>
-        </div>
+<script>
+(function () {
+  'use strict';
 
-        <!-- Share URL Button -->
-        <button id="btn-share" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-medium flex items-center gap-1.5 transition whitespace-nowrap" title="Copy 3D Magic Link">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 1 1 0-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 1 0 5.367-2.684 3 3 0 0 0-5.367 2.684zm0 9.316a3 3 0 1 0 5.368 2.684 3 3 0 0 0-5.368-2.684z" />
-          </svg>
-          <span class="hidden sm:inline">Share</span>
-        </button>
-
-        <!-- Save to InstaBox Backend -->
-        <button id="btn-save-backend" class="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-lg shadow-emerald-900/40 whitespace-nowrap" title="Save as dynamic QR on InstaBox Backend">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          <span class="hidden sm:inline">Save to Backend</span>
-        </button>
-
-        <!-- Snapshot Download -->
-        <button id="btn-download" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs transition" title="Download Snapshot (PNG)">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-          </svg>
-        </button>
-      </div>
-
-      <!-- Quick Helpers & Notification toast -->
-      <div class="flex items-center justify-between text-[11px] text-stone-400 px-1">
-        <div class="flex items-center gap-3">
-          <span>🖱️ Left Click + Drag: Orbit 3D</span>
-          <span class="hidden sm:inline">📜 Scroll: Zoom</span>
-          <span class="hidden md:inline">🖱️ Right Click: Pan</span>
-        </div>
-        <div id="toast" class="text-emerald-400 font-medium transition-opacity duration-300 opacity-0">Link copied!</div>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Modal for Backend Saved Dynamic QR -->
-  <div id="save-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-stone-900 border border-white/20 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
-      <button id="modal-close" class="absolute top-4 right-4 text-stone-400 hover:text-white text-lg">&times;</button>
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-xl">
-          🚀
-        </div>
-        <div>
-          <h3 class="text-base font-bold text-white">Saved to InstaBox Backend</h3>
-          <p class="text-xs text-stone-400">Dynamic QR with live redirection & telemetry</p>
-        </div>
-      </div>
-
-      <div class="space-y-3 bg-stone-950 p-4 rounded-xl border border-white/10 text-xs">
-        <div>
-          <span class="text-stone-400">Target URL:</span>
-          <div id="modal-target-url" class="font-mono text-white truncate mt-0.5"></div>
-        </div>
-        <div>
-          <span class="text-stone-400">InstaBox Short Redirect URL:</span>
-          <div class="flex items-center gap-2 mt-0.5">
-            <input id="modal-short-url" readonly class="w-full bg-stone-900 border border-white/15 px-2.5 py-1.5 rounded-lg text-emerald-400 font-mono text-xs" />
-            <button id="modal-copy-btn" class="px-2.5 py-1.5 bg-emerald-500 text-stone-950 font-bold rounded-lg text-xs hover:bg-emerald-400">Copy</button>
-          </div>
-        </div>
-        <div>
-          <span class="text-stone-400">Backend Server:</span>
-          <div class="font-mono text-stone-300">https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech</div>
-        </div>
-      </div>
-
-      <div class="mt-4 flex justify-end">
-        <button id="modal-done-btn" class="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-white rounded-xl text-xs font-semibold transition">
-          Done
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // ==========================================
-    // BACKEND CONFIGURATION
-    // ==========================================
-    const BACKEND_URL = "https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech";
-
-    async function checkBackendHealth() {
-      const dot = document.getElementById("backend-dot");
-      const text = document.getElementById("backend-text");
-      try {
-        const res = await fetch(BACKEND_URL + "/api/health", { method: "GET", mode: "cors" });
-        if (res.ok) {
-          dot.className = "w-2 h-2 rounded-full bg-emerald-400";
-          text.textContent = "InstaBox Backend Online";
-          text.className = "font-mono text-[11px] text-emerald-300";
-        } else {
-          dot.className = "w-2 h-2 rounded-full bg-amber-400";
-          text.textContent = "Backend responding (" + res.status + ")";
-        }
-      } catch (err) {
-        dot.className = "w-2 h-2 rounded-full bg-emerald-500";
-        text.textContent = "InstaBox Node Live";
+  // ── Helper: Get clean dynamic default URL ──────────────────────────────────
+  function getDefaultUrl() {
+    try {
+      if (location.origin && location.origin !== 'null' && location.origin !== 'file://') {
+        return location.origin + location.pathname;
       }
+    } catch(e) {}
+    return 'https://kaushalboii.github.io/cruseqr/';
+  }
+
+  function cleanUrl(u) {
+    if (!u) return getDefaultUrl();
+    var s = u.trim();
+    if (s === 'https://icqr.com/' || s === 'https://icqr.com' || s === 'https://cruseqr.com/' || s === 'https://cruseqr.com' || s === '') {
+      return getDefaultUrl();
     }
-    checkBackendHealth();
-    setInterval(checkBackendHealth, 30000);
+    return s.match(/^https?:\\\\/\\\\//) ? s : ('https://' + s);
+  }
 
-    // ==========================================
-    // SEASONS & PALETTES CONFIGURATION
-    // ==========================================
-    const SEASONS = [
-      {
-        id: "spring",
-        name: "Spring",
-        icon: "🌸",
-        skyColor: 0xf5eee6,
-        groundColor: 0xede4d8,
-        blockColor: 0x2e1d16,
-        trunkColor: 0x5a3e36,
-        leavesColors: [0xffb7c5, 0xff9ebb, 0xffc0cb, 0xffe4e1],
-        petalColor: 0xffb7c5
-      },
-      {
-        id: "summer",
-        name: "Summer",
-        icon: "🍃",
-        skyColor: 0xedf5ee,
-        groundColor: 0xdeeade,
-        blockColor: 0x14281b,
-        trunkColor: 0x4a3b32,
-        leavesColors: [0x2e8b57, 0x3cb371, 0x66cdaa, 0x20b2aa],
-        petalColor: 0x88d49e
-      },
-      {
-        id: "autumn",
-        name: "Autumn",
-        icon: "🍂",
-        skyColor: 0xfbf2e4,
-        groundColor: 0xf2e1cc,
-        blockColor: 0x361608,
-        trunkColor: 0x54331d,
-        leavesColors: [0xd9531e, 0xeb8223, 0xf2a93b, 0xa63d11],
-        petalColor: 0xeb8223
-      },
-      {
-        id: "winter",
-        name: "Winter",
-        icon: "❄️",
-        skyColor: 0xedf3f8,
-        groundColor: 0xe0eaf2,
-        blockColor: 0x172230,
-        trunkColor: 0x3d4451,
-        leavesColors: [0xcad9e8, 0xe0e8f0, 0xb8cce0, 0xffffff],
-        petalColor: 0xe0e8f0
-      }
-    ];
+  // ── Seasons ────────────────────────────────────────────────────────────────
+  var SEASONS = [
+    { name:'Spring', bgHex:0xf5ede2, bg:'#f5ede2', ground:0xede0d4, block:0x2b1a13, trunk:0x5c3d2e, leaf1:0xffb7c5, leaf2:0xffc0cb, petal:0xffb7c5 },
+    { name:'Summer', bgHex:0xe8f5ec, bg:'#e8f5ec', ground:0xd8ead8, block:0x0f2a1a, trunk:0x3b2d20, leaf1:0x2d8a50, leaf2:0x57c97a, petal:0x7dd49a },
+    { name:'Autumn', bgHex:0xfbf0e2, bg:'#fbf0e2', ground:0xf0e0c8, block:0x3a1508, trunk:0x52301a, leaf1:0xd9531e, leaf2:0xf0a830, petal:0xe07828 },
+    { name:'Winter', bgHex:0xe8f0f8, bg:'#e8f0f8', ground:0xd8e4f0, block:0x162638, trunk:0x344558, leaf1:0xc8def0, leaf2:0xffffff, petal:0xd8eaf8 }
+  ];
 
-    const PALETTES = [
-      { id: "natural", name: "Natural", hexes: ["#5a3e36", "#ffb7c5", "#f0e9dc"] },
-      { id: "vibrant", name: "Vibrant", hexes: ["#4a3b32", "#ff4081", "#ffffff"] },
-      { id: "pastel",  name: "Pastel",  hexes: ["#7a6358", "#b5ead7", "#ffdac1"] },
-      { id: "dark",    name: "Obsidian",hexes: ["#1f1f1f", "#10b981", "#121212"] }
-    ];
+  // ── Palettes ───────────────────────────────────────────────────────────────
+  var PALETTES = [
+    { name:'Sakura',  hex:0xffb7c5, color:'#ffb7c5' },
+    { name:'Rose',    hex:0xf43f7e, color:'#f43f7e' },
+    { name:'Emerald', hex:0x10b981, color:'#10b981' },
+    { name:'Amber',   hex:0xf59e0b, color:'#f59e0b' },
+    { name:'Sky',     hex:0x38bdf8, color:'#38bdf8' },
+    { name:'Violet',  hex:0x8b5cf6, color:'#8b5cf6' }
+  ];
 
-    // ==========================================
-    // ICQR QUERY PARAM PARSER / ENCODER
-    // e.g. ?q=MDBodHRwczovL2ljcXIuY29tLw -> season 0, palette 0, url https://icqr.com/
-    // ==========================================
-    function parseQueryParam(qParam) {
-      if (!qParam) return { url: "https://icqr.com/", season: 0, palette: 0 };
-      try {
-        const decoded = atob(qParam);
-        const season = parseInt(decoded.charAt(0), 10) || 0;
-        const palette = parseInt(decoded.charAt(1), 10) || 0;
-        const url = decoded.substring(2) || "https://icqr.com/";
-        return {
-          url: url,
-          season: Math.min(3, Math.max(0, season)),
-          palette: Math.min(3, Math.max(0, palette))
-        };
-      } catch (e) {
-        return { url: "https://icqr.com/", season: 0, palette: 0 };
-      }
-    }
+  // ── App State ──────────────────────────────────────────────────────────────
+  var state = { url: getDefaultUrl(), season: 0, palette: 0, seed: 42, scanMode: false, muted: true };
 
-    function encodeQueryParam(url, season, palette) {
-      try {
-        return btoa(String(season) + String(palette) + url);
-      } catch (e) {
-        return "";
-      }
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialConfig = parseQueryParam(urlParams.get("q"));
-
-    let currentUrl = initialConfig.url;
-    let currentSeasonIndex = initialConfig.season;
-    let currentPaletteIndex = initialConfig.palette;
-    let currentSeed = 101;
-    let isScanMode = false;
-    let audioPlaying = false;
-    let audioCtx = null;
-    let audioGain = null;
-
-    document.getElementById("target-url-input").value = currentUrl;
-
-    // ==========================================
-    // PROCEDURAL AUDIO SYNTHESIZER
-    // ==========================================
-    function toggleAudio() {
-      const icon = document.getElementById("audio-icon");
-      const label = document.getElementById("audio-label");
-      if (!audioPlaying) {
-        try {
-          if (!audioCtx) {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioCtx = new AudioContext();
-          }
-          if (audioCtx.state === "suspended") {
-            audioCtx.resume();
-          }
-          const bufferSize = audioCtx.sampleRate * 2;
-          const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-          const output = noiseBuffer.getChannelData(0);
-          for (let i = 0; i < bufferSize; i++) {
-            output[i] = Math.random() * 2 - 1;
-          }
-          const whiteNoise = audioCtx.createBufferSource();
-          whiteNoise.buffer = noiseBuffer;
-          whiteNoise.loop = true;
-
-          const filter = audioCtx.createBiquadFilter();
-          filter.type = "bandpass";
-          filter.frequency.setValueAtTime(320, audioCtx.currentTime);
-          filter.Q.setValueAtTime(2.5, audioCtx.currentTime);
-
-          audioGain = audioCtx.createGain();
-          audioGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-
-          whiteNoise.connect(filter);
-          filter.connect(audioGain);
-          audioGain.connect(audioCtx.destination);
-          whiteNoise.start();
-
-          audioPlaying = true;
-          icon.textContent = "🔊";
-          label.textContent = "Sound On";
-        } catch (e) {
-          console.warn("Audio not allowed yet:", e);
-        }
+  // Parse ?q= query param
+  try {
+    var qParam = new URLSearchParams(location.search).get('q');
+    if (qParam) {
+      var d = atob(qParam);
+      if (d.length >= 2 && !isNaN(parseInt(d[0])) && !isNaN(parseInt(d[1]))) {
+        state.season  = Math.min(3, Math.max(0, parseInt(d[0]) || 0));
+        state.palette = Math.min(5, Math.max(0, parseInt(d[1]) || 0));
+        state.url     = cleanUrl(d.slice(2));
       } else {
-        if (audioCtx) audioCtx.suspend();
-        audioPlaying = false;
-        icon.textContent = "🔇";
-        label.textContent = "Sound Off";
+        state.url = cleanUrl(d);
       }
     }
-    document.getElementById("btn-audio").addEventListener("click", toggleAudio);
+  } catch(e) {}
 
-    // ==========================================
-    // UI CONTROLS RENDERER
-    // ==========================================
-    function renderSeasonButtons() {
-      const container = document.getElementById("season-buttons");
-      container.innerHTML = "";
-      SEASONS.forEach((s, idx) => {
-        const btn = document.createElement("button");
-        const active = idx === currentSeasonIndex;
-        btn.className = "py-1.5 px-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition " + (
-          active
-            ? "bg-emerald-500 text-stone-950 shadow-md font-bold"
-            : "bg-white/5 hover:bg-white/10 text-stone-300"
-        );
-        btn.innerHTML = "<span>" + s.icon + "</span> <span>" + s.name + "</span>";
-        btn.onclick = () => {
-          currentSeasonIndex = idx;
-          renderSeasonButtons();
-          updateSceneTheme();
-          updateUrlBar();
-        };
-        container.appendChild(btn);
-      });
+  // ── Three.js scene refs ───────────────────────────────────────────────────
+  var scene, camera, renderer, clock;
+  var qrGroup, treeGroup, petalMesh, groundMesh, qrBasePlate;
+  var cam = { pitch: 0.78, yaw: 0.6, dist: 46, tPitch: 0.78, tYaw: 0.6, tDist: 46, dragging: false, px: 0, py: 0 };
+
+  // Seeded RNG
+  function makeRng(seed) {
+    var s = seed >>> 0;
+    return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  }
+
+  // ── Build Instanced QR Blocks ──────────────────────────────────────────────
+  function buildQRMesh(url, blockColor, scanMode) {
+    if (!url) return null;
+    try {
+      var qr = qrcode(0, 'M');
+      qr.addData(url);
+      qr.make();
+      var size   = qr.getModuleCount();
+      var bs     = 0.56;
+      var offset = (size * bs) / 2;
+
+      var count = 0;
+      for (var r = 0; r < size; r++)
+        for (var c = 0; c < size; c++)
+          if (qr.isDark(r, c)) count++;
+
+      if (count === 0) return null;
+
+      var THREE = window.THREE;
+      var geo   = new THREE.BoxGeometry(bs * 0.9, 0.42, bs * 0.9);
+      var mat   = new THREE.MeshStandardMaterial({ color: blockColor, roughness: 0.5, metalness: 0.05 });
+      var mesh  = new THREE.InstancedMesh(geo, mat, count);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      var dummy = new THREE.Object3D();
+      var idx   = 0;
+      for (var r = 0; r < size; r++) {
+        for (var c = 0; c < size; c++) {
+          if (!qr.isDark(r, c)) continue;
+          var x    = c * bs - offset + bs / 2;
+          var z    = r * bs - offset + bs / 2;
+          var dist = Math.sqrt(x * x + z * z);
+          var h    = (!scanMode && dist < 1.8) ? 0.22 : 0.42;
+          dummy.position.set(x, h / 2, z);
+          dummy.scale.set(1, h / 0.42, 1);
+          dummy.updateMatrix();
+          mesh.setMatrixAt(idx++, dummy.matrix);
+        }
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      return mesh;
+    } catch (e) {
+      console.warn('QR build error:', e);
+      return null;
+    }
+  }
+
+  // ── Build Procedural Tree ──────────────────────────────────────────────────
+  function buildTree(group, trunkColor, leaf1, leaf2, paletteHex, seed) {
+    var THREE   = window.THREE;
+    var rng     = makeRng(seed);
+    var trunkMat = new THREE.MeshStandardMaterial({ color: trunkColor, roughness: 0.88 });
+    var leafMatA = new THREE.MeshStandardMaterial({ color: paletteHex, roughness: 0.6, flatShading: true });
+    var leafMatB = new THREE.MeshStandardMaterial({ color: leaf2,      roughness: 0.6, flatShading: true });
+
+    function branch(ox, oy, oz, dx, dy, dz, len, rad, depth) {
+      var mag = Math.sqrt(dx*dx + dy*dy + dz*dz);
+      dx /= mag; dy /= mag; dz /= mag;
+
+      if (depth > 5 || rad < 0.04) {
+        var n = 2 + Math.floor(rng() * 3);
+        for (var i = 0; i < n; i++) {
+          var lg = new THREE.DodecahedronGeometry(0.28 + rng() * 0.26, 0);
+          var lm = new THREE.Mesh(lg, rng() > 0.5 ? leafMatA : leafMatB);
+          lm.position.set(ox + (rng()-0.5)*0.8, oy + rng()*0.5, oz + (rng()-0.5)*0.8);
+          lm.castShadow = true;
+          group.add(lm);
+        }
+        return;
+      }
+
+      var ex = ox + dx * len, ey = oy + dy * len, ez = oz + dz * len;
+      var mx = (ox+ex)/2,     my = (oy+ey)/2,     mz = (oz+ez)/2;
+
+      var cg = new THREE.CylinderGeometry(rad * 0.72, rad, len, 7);
+      var cm = new THREE.Mesh(cg, trunkMat);
+      cm.position.set(mx, my, mz);
+      cm.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), new THREE.Vector3(dx,dy,dz).normalize());
+      cm.castShadow = true;
+      cm.receiveShadow = true;
+      group.add(cm);
+
+      if (depth >= 3) {
+        var fg = new THREE.DodecahedronGeometry(0.5 + rng() * 0.5, 1);
+        var fm = new THREE.Mesh(fg, rng() > 0.4 ? leafMatA : leafMatB);
+        fm.position.set(ex, ey, ez);
+        fm.castShadow = true;
+        group.add(fm);
+      }
+
+      var kids = depth === 0 ? 4 : (rng() > 0.4 ? 3 : 2);
+      for (var i = 0; i < kids; i++) {
+        var spread = 0.35 + rng() * 0.4;
+        var rot    = (i / kids) * Math.PI * 2 + (rng()-0.5) * 0.6;
+        var ndx    = dx + Math.cos(rot) * spread;
+        var ndy    = dy + 0.15 + rng() * 0.35;
+        var ndz    = dz + Math.sin(rot) * spread;
+        branch(ex, ey, ez, ndx, ndy, ndz, len * (0.68 + rng()*0.08), rad * (0.62 + rng()*0.08), depth+1);
+      }
     }
 
-    function renderPaletteButtons() {
-      const container = document.getElementById("palette-buttons");
-      container.innerHTML = "";
-      PALETTES.forEach((p, idx) => {
-        const btn = document.createElement("button");
-        const active = idx === currentPaletteIndex;
-        btn.className = "w-7 h-7 rounded-full flex items-center justify-center p-0.5 border transition " + (
-          active ? "border-emerald-400 scale-110 shadow-lg ring-2 ring-emerald-400/40" : "border-transparent opacity-70 hover:opacity-100"
-        );
-        btn.title = p.name;
-        btn.innerHTML = '<div class="w-full h-full rounded-full overflow-hidden flex transform -rotate-45">' +
-          '<span class="w-1/3 h-full" style="background:' + p.hexes[0] + '"></span>' +
-          '<span class="w-1/3 h-full" style="background:' + p.hexes[1] + '"></span>' +
-          '<span class="w-1/3 h-full" style="background:' + p.hexes[2] + '"></span>' +
-          '</div>';
-        btn.onclick = () => {
-          currentPaletteIndex = idx;
-          renderPaletteButtons();
-          updateSceneTheme();
-          updateUrlBar();
-        };
-        container.appendChild(btn);
-      });
+    branch(0, 0, 0, 0, 1, 0, 4.2, 0.72, 0);
+
+    var crownG = new THREE.DodecahedronGeometry(2.8 + rng() * 0.8, 1);
+    var crownM = new THREE.Mesh(crownG, leafMatA);
+    crownM.position.set(0, 10.5, 0);
+    crownM.castShadow = true;
+    group.add(crownM);
+  }
+
+  // ── Clear group ────────────────────────────────────────────────────────────
+  function clearGroup(g) {
+    while (g.children.length) {
+      var c = g.children[0];
+      if (c.geometry) c.geometry.dispose();
+      if (c.material) {
+        if (Array.isArray(c.material)) c.material.forEach(function(m){ m.dispose(); });
+        else c.material.dispose();
+      }
+      g.remove(c);
     }
+  }
 
-    renderSeasonButtons();
-    renderPaletteButtons();
+  // ── Rebuild Scene ──────────────────────────────────────────────────────────
+  function rebuildScene() {
+    if (!scene) return;
+    var THREE = window.THREE;
+    var s     = SEASONS[state.season];
+    var pHex  = PALETTES[state.palette].hex;
 
-    // ==========================================
-    // THREE.JS 3D SCENE & ENGINE
-    // ==========================================
-    const container = document.getElementById("canvas-container");
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(24, 30, 38);
+    // Background + fog
+    scene.background = new THREE.Color(s.bgHex);
+    scene.fog        = new THREE.FogExp2(s.bgHex, 0.011);
+    document.body.style.background = s.bg;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    // Ground disc
+    if (groundMesh) scene.remove(groundMesh);
+    var gGeo = new THREE.CylinderGeometry(21, 23, 2.2, 56);
+    var gMat = new THREE.MeshStandardMaterial({ color: s.ground, roughness: 0.92 });
+    groundMesh = new THREE.Mesh(gGeo, gMat);
+    groundMesh.position.y = -1.1;
+    groundMesh.receiveShadow = true;
+    scene.add(groundMesh);
+
+    // QR blocks
+    clearGroup(qrGroup);
+    var qrMesh = buildQRMesh(state.url, s.block, state.scanMode);
+    if (qrMesh) qrGroup.add(qrMesh);
+
+    // Tree (hidden in scan mode for 100% scannability)
+    clearGroup(treeGroup);
+    buildTree(treeGroup, s.trunk, s.leaf1, s.leaf2, pHex, state.seed);
+    treeGroup.visible = !state.scanMode;
+
+    // Petals
+    if (petalMesh) scene.remove(petalMesh);
+    var N   = 180;
+    var pos = new Float32Array(N * 3);
+    for (var i = 0; i < N; i++) {
+      pos[i*3]   = (Math.random()-0.5) * 34;
+      pos[i*3+1] = Math.random() * 22 + 1;
+      pos[i*3+2] = (Math.random()-0.5) * 34;
+    }
+    var pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    var pMat  = new THREE.PointsMaterial({ color: pHex, size: 0.44, transparent: true, opacity: 0.85 });
+    petalMesh = new THREE.Points(pGeo, pMat);
+    scene.add(petalMesh);
+  }
+
+  // ── Init Three.js ──────────────────────────────────────────────────────────
+  function initThree() {
+    var THREE     = window.THREE;
+    var container = document.getElementById('canvas-container');
+
+    renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.shadowMap.enabled  = true;
+    renderer.shadowMap.type     = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
 
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.maxPolarAngle = Math.PI / 2 - 0.02;
-    controls.minDistance = 12;
-    controls.maxDistance = 85;
-    controls.target.set(0, 3.5, 0);
+    scene  = new THREE.Scene();
+    clock  = new THREE.Clock();
+    camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 500);
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
-    scene.add(ambientLight);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.78));
+    var sun = new THREE.DirectionalLight(0xfff8e8, 1.45);
+    sun.position.set(28, 55, 32);
+    sun.castShadow = true;
+    sun.shadow.mapSize.width = sun.shadow.mapSize.height = 2048;
+    sun.shadow.camera.left   = -28; sun.shadow.camera.right  = 28;
+    sun.shadow.camera.top    =  28; sun.shadow.camera.bottom = -28;
+    sun.shadow.camera.near   = 0.5; sun.shadow.camera.far    = 160;
+    sun.shadow.bias = -0.0004;
+    scene.add(sun);
 
-    const sunLight = new THREE.DirectionalLight(0xfffaea, 1.35);
-    sunLight.position.set(25, 45, 25);
-    sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
-    sunLight.shadow.camera.near = 0.5;
-    sunLight.shadow.camera.far = 150;
-    sunLight.shadow.camera.left = -25;
-    sunLight.shadow.camera.right = 25;
-    sunLight.shadow.camera.top = 25;
-    sunLight.shadow.camera.bottom = -25;
-    sunLight.shadow.bias = -0.0005;
-    scene.add(sunLight);
+    qrGroup   = new THREE.Group(); scene.add(qrGroup);
+    treeGroup = new THREE.Group(); scene.add(treeGroup);
 
-    // Groups
-    const worldGroup = new THREE.Group();
-    scene.add(worldGroup);
-
-    let groundMesh = null;
-    let qrGroup = new THREE.Group();
-    worldGroup.add(qrGroup);
-
-    let treeGroup = new THREE.Group();
-    worldGroup.add(treeGroup);
-
-    let particleSystem = null;
-    const PARTICLE_COUNT = 320;
-    const particlePositions = new Float32Array(PARTICLE_COUNT * 3);
-    const particleSpeeds = [];
-
-    function seededRandom(seed) {
-      const x = Math.sin(seed++) * 10000;
-      return x - Math.floor(x);
-    }
-
-    // Build Ground Island
-    function buildGround(groundColor) {
-      if (groundMesh) worldGroup.remove(groundMesh);
-      const geo = new THREE.CylinderGeometry(23, 25, 2.0, 56);
-      const mat = new THREE.MeshStandardMaterial({
-        color: groundColor,
-        roughness: 0.9,
-        metalness: 0.05
-      });
-      groundMesh = new THREE.Mesh(geo, mat);
-      groundMesh.position.y = -1.0;
-      groundMesh.receiveShadow = true;
-      worldGroup.add(groundMesh);
-    }
-
-    // Generate QR Matrix
-    function generateQRMatrix(url) {
-      try {
-        const qr = qrcode(0, "M");
-        qr.addData(url || "https://icqr.com/");
-        qr.make();
-        const size = qr.getModuleCount();
-        const matrix = [];
-        for (let r = 0; r < size; r++) {
-          const row = [];
-          for (let c = 0; c < size; c++) {
-            row.push(qr.isDark(r, c));
-          }
-          matrix.push(row);
-        }
-        return { size: size, matrix: matrix };
-      } catch (err) {
-        console.error("QR Generation error:", err);
-        return null;
-      }
-    }
-
-    // Build 3D QR Matrix Blocks
-    function buildQRMatrix(url, blockColor) {
-      while (qrGroup.children.length > 0) {
-        qrGroup.remove(qrGroup.children[0]);
-      }
-
-      const qrData = generateQRMatrix(url);
-      if (!qrData) return;
-
-      const size = qrData.size;
-      const matrix = qrData.matrix;
-      const blockSize = 0.65;
-      const gridOffset = (size * blockSize) / 2;
-
-      let darkCount = 0;
-      for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-          if (matrix[r][c]) darkCount++;
-        }
-      }
-
-      const boxGeo = new THREE.BoxGeometry(blockSize * 0.92, 0.48, blockSize * 0.92);
-      const blockMat = new THREE.MeshStandardMaterial({
-        color: blockColor,
-        roughness: 0.5,
-        metalness: 0.1
-      });
-
-      const instancedMesh = new THREE.InstancedMesh(boxGeo, blockMat, darkCount);
-      instancedMesh.castShadow = true;
-      instancedMesh.receiveShadow = true;
-
-      const dummy = new THREE.Object3D();
-      let idx = 0;
-
-      for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-          if (matrix[r][c]) {
-            const x = c * blockSize - gridOffset + blockSize / 2;
-            const z = r * blockSize - gridOffset + blockSize / 2;
-
-            const isTopLeftFinder = r < 7 && c < 7;
-            const isTopRightFinder = r < 7 && c >= size - 7;
-            const isBottomLeftFinder = r >= size - 7 && c < 7;
-            const isFinder = isTopLeftFinder || isTopRightFinder || isBottomLeftFinder;
-
-            const distFromCenter = Math.sqrt(x * x + z * z);
-            const height = isFinder ? 0.52 : (distFromCenter < 2.0 ? 0.28 : 0.48);
-
-            dummy.position.set(x, height / 2, z);
-            dummy.scale.set(1, height / 0.48, 1);
-            dummy.updateMatrix();
-            instancedMesh.setMatrixAt(idx++, dummy.matrix);
-          }
-        }
-      }
-
-      instancedMesh.instanceMatrix.needsUpdate = true;
-      qrGroup.add(instancedMesh);
-    }
-
-    // Build 3D Tree
-    function buildTree(trunkColor, leavesColors, seed) {
-      while (treeGroup.children.length > 0) {
-        treeGroup.remove(treeGroup.children[0]);
-      }
-
-      const trunkMat = new THREE.MeshStandardMaterial({
-        color: trunkColor,
-        roughness: 0.85,
-        flatShading: true
-      });
-
-      const trunkGeo = new THREE.CylinderGeometry(1.1, 1.7, 7.5, 8);
-      const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-      trunk.position.y = 3.75;
-      trunk.castShadow = true;
-      trunk.receiveShadow = true;
-      treeGroup.add(trunk);
-
-      const numBranches = 7;
-      let curSeed = seed;
-
-      for (let i = 0; i < numBranches; i++) {
-        const height = 4.2 + seededRandom(curSeed++) * 3.0;
-        const angle = (i / numBranches) * Math.PI * 2 + (seededRandom(curSeed++) - 0.5) * 0.4;
-        const length = 4.0 + seededRandom(curSeed++) * 2.5;
-
-        const branchGeo = new THREE.CylinderGeometry(0.35, 0.7, length, 6);
-        const branch = new THREE.Mesh(branchGeo, trunkMat);
-        branch.position.set(Math.cos(angle) * 1.4, height, Math.sin(angle) * 1.4);
-        branch.rotation.z = (Math.cos(angle) > 0 ? -1 : 1) * (0.65 + seededRandom(curSeed++) * 0.25);
-        branch.rotation.y = angle;
-        branch.castShadow = true;
-        treeGroup.add(branch);
-
-        const leafColor = leavesColors[i % leavesColors.length];
-        const leafMat = new THREE.MeshStandardMaterial({
-          color: leafColor,
-          roughness: 0.6,
-          flatShading: true
-        });
-
-        const cloudRadius = 2.4 + seededRandom(curSeed++) * 1.3;
-        const leafGeo = new THREE.DodecahedronGeometry(cloudRadius, 1);
-        const leafCloud = new THREE.Mesh(leafGeo, leafMat);
-        const endX = Math.cos(angle) * (length * 1.15);
-        const endZ = Math.sin(angle) * (length * 1.15);
-        leafCloud.position.set(endX, height + length * 0.68, endZ);
-        leafCloud.castShadow = true;
-        treeGroup.add(leafCloud);
-      }
-
-      const crownMat = new THREE.MeshStandardMaterial({
-        color: leavesColors[0],
-        roughness: 0.6,
-        flatShading: true
-      });
-      const crownGeo = new THREE.DodecahedronGeometry(3.6, 1);
-      const crown = new THREE.Mesh(crownGeo, crownMat);
-      crown.position.set(0, 9.6, 0);
-      crown.castShadow = true;
-      treeGroup.add(crown);
-    }
-
-    // Build Falling Petals
-    function buildParticles(petalColor) {
-      if (particleSystem) scene.remove(particleSystem);
-      particleSpeeds.length = 0;
-
-      const pGeo = new THREE.BufferGeometry();
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        particlePositions[i * 3 + 0] = (Math.random() - 0.5) * 36;
-        particlePositions[i * 3 + 1] = Math.random() * 22 + 2;
-        particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 36;
-        particleSpeeds.push({
-          y: Math.random() * 0.04 + 0.02,
-          x: Math.random() * 0.03 + 0.01,
-          rot: Math.random() * 0.05
-        });
-      }
-      pGeo.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
-
-      const pMat = new THREE.PointsMaterial({
-        color: petalColor,
-        size: 0.45,
-        transparent: true,
-        opacity: 0.85
-      });
-
-      particleSystem = new THREE.Points(pGeo, pMat);
-      scene.add(particleSystem);
-    }
-
-    function updateSceneTheme() {
-      const season = SEASONS[currentSeasonIndex];
-      scene.background = new THREE.Color(season.skyColor);
-      scene.fog = new THREE.FogExp2(season.skyColor, 0.014);
-
-      buildGround(season.groundColor);
-      buildQRMatrix(currentUrl, season.blockColor);
-      buildTree(season.trunkColor, season.leavesColors, currentSeed);
-      buildParticles(season.petalColor);
-    }
-
-    updateSceneTheme();
-
-    // ==========================================
-    // TOP-DOWN SCAN MODE TOGGLE
-    // ==========================================
-    const scanModeBtn = document.getElementById("btn-scan-mode");
-    const scanModeLabel = document.getElementById("scan-mode-label");
-
-    let targetCamPos = null;
-    let targetLookAt = null;
-
-    function toggleScanMode() {
-      isScanMode = !isScanMode;
-      if (isScanMode) {
-        targetCamPos = new THREE.Vector3(0, 36, 0.001);
-        targetLookAt = new THREE.Vector3(0, 0, 0);
-        scanModeLabel.textContent = "Orbit Mode";
-        scanModeBtn.className = "px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/25 transition";
-      } else {
-        targetCamPos = new THREE.Vector3(24, 30, 38);
-        targetLookAt = new THREE.Vector3(0, 3.5, 0);
-        scanModeLabel.textContent = "Scan Mode";
-        scanModeBtn.className = "px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-500/25 transition";
-      }
-    }
-    scanModeBtn.addEventListener("click", toggleScanMode);
-
-    // ==========================================
-    // SEED RANDOMIZER
-    // ==========================================
-    document.getElementById("btn-random-seed").addEventListener("click", () => {
-      currentSeed = Math.floor(Math.random() * 10000);
-      const season = SEASONS[currentSeasonIndex];
-      buildTree(season.trunkColor, season.leavesColors, currentSeed);
+    // Orbit controls
+    container.addEventListener('mousedown', function (e) { cam.dragging=true; cam.px=e.clientX; cam.py=e.clientY; });
+    window.addEventListener('mousemove', function (e) {
+      if (!cam.dragging) return;
+      cam.tYaw   -= (e.clientX - cam.px) * 0.007;
+      cam.tPitch  = Math.max(0.05, Math.min(Math.PI/2 - 0.02, cam.tPitch + (e.clientY - cam.py) * 0.007));
+      cam.px = e.clientX; cam.py = e.clientY;
     });
+    window.addEventListener('mouseup', function () { cam.dragging = false; });
+    container.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      cam.tDist = Math.max(14, Math.min(85, cam.tDist + e.deltaY * 0.04));
+    }, { passive: false });
+    container.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1) return;
+      cam.dragging=true; cam.px=e.touches[0].clientX; cam.py=e.touches[0].clientY;
+    }, { passive: true });
+    window.addEventListener('touchmove', function (e) {
+      if (!cam.dragging || e.touches.length !== 1) return;
+      cam.tYaw   -= (e.touches[0].clientX - cam.px) * 0.009;
+      cam.tPitch  = Math.max(0.05, Math.min(Math.PI/2 - 0.02, cam.tPitch + (e.touches[0].clientY - cam.py) * 0.009));
+      cam.px=e.touches[0].clientX; cam.py=e.touches[0].clientY;
+    }, { passive: true });
+    window.addEventListener('touchend', function () { cam.dragging = false; });
 
-    // ==========================================
-    // URL UPDATER & SHARING
-    // ==========================================
-    function showToast(msg) {
-      const toast = document.getElementById("toast");
-      toast.textContent = msg;
-      toast.style.opacity = "1";
-      setTimeout(() => {
-        toast.style.opacity = "0";
-      }, 2500);
-    }
-
-    function updateUrlBar() {
-      const q = encodeQueryParam(currentUrl, currentSeasonIndex, currentPaletteIndex);
-      const newUrl = window.location.pathname + "?q=" + q;
-      window.history.replaceState(null, "", newUrl);
-    }
-
-    document.getElementById("btn-apply-url").addEventListener("click", () => {
-      const input = document.getElementById("target-url-input").value.trim();
-      if (!input) return;
-      currentUrl = input.startsWith("http") ? input : "https://" + input;
-      const season = SEASONS[currentSeasonIndex];
-      buildQRMatrix(currentUrl, season.blockColor);
-      updateUrlBar();
-      showToast("3D QR Matrix Updated!");
-    });
-
-    document.getElementById("target-url-input").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        document.getElementById("btn-apply-url").click();
-      }
-    });
-
-    document.getElementById("btn-share").addEventListener("click", () => {
-      const q = encodeQueryParam(currentUrl, currentSeasonIndex, currentPaletteIndex);
-      const shareUrl = window.location.origin + window.location.pathname + "?q=" + q;
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        showToast("Magic Tree Link Copied!");
-      });
-    });
-
-    document.getElementById("btn-download").addEventListener("click", () => {
-      renderer.render(scene, camera);
-      const dataUrl = renderer.domElement.toDataURL("image/png");
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = "cruseqr-tree-" + Date.now() + ".png";
-      a.click();
-      showToast("Snapshot downloaded!");
-    });
-
-    // ==========================================
-    // SAVE TO INSTABOX BACKEND (DYNAMIC QR)
-    // ==========================================
-    const saveBtn = document.getElementById("btn-save-backend");
-    const saveModal = document.getElementById("save-modal");
-    const modalClose = document.getElementById("modal-close");
-    const modalDone = document.getElementById("modal-done-btn");
-    const modalCopy = document.getElementById("modal-copy-btn");
-
-    saveBtn.addEventListener("click", async () => {
-      saveBtn.disabled = true;
-      saveBtn.innerHTML = '<span class="animate-spin">⏳</span> Saving...';
-      try {
-        const response = await fetch(BACKEND_URL + "/api/v1/qr", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          mode: "cors",
-          body: JSON.stringify({
-            title: "Magic Tree - " + SEASONS[currentSeasonIndex].name,
-            targetUrl: currentUrl,
-            type: "URL",
-            treeConfig: {
-              season: currentSeasonIndex,
-              palette: currentPaletteIndex,
-              seed: currentSeed
-            }
-          })
-        });
-
-        let shortUrl = BACKEND_URL + "/r/tree-" + Date.now().toString(36);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.shortUrl) shortUrl = data.shortUrl;
-        }
-
-        document.getElementById("modal-target-url").textContent = currentUrl;
-        document.getElementById("modal-short-url").value = shortUrl;
-        saveModal.classList.remove("hidden");
-      } catch (err) {
-        const fallbackShort = BACKEND_URL + "/r/magic-" + Math.random().toString(36).substring(2, 7);
-        document.getElementById("modal-target-url").textContent = currentUrl;
-        document.getElementById("modal-short-url").value = fallbackShort;
-        saveModal.classList.remove("hidden");
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg><span class="hidden sm:inline">Save to Backend</span>';
-      }
-    });
-
-    modalClose.onclick = () => saveModal.classList.add("hidden");
-    modalDone.onclick = () => saveModal.classList.add("hidden");
-    modalCopy.onclick = () => {
-      const input = document.getElementById("modal-short-url");
-      input.select();
-      navigator.clipboard.writeText(input.value);
-      modalCopy.textContent = "Copied!";
-      setTimeout(() => (modalCopy.textContent = "Copy"), 2000);
-    };
-
-    // ==========================================
-    // ANIMATION & RENDER LOOP
-    // ==========================================
-    const clock = new THREE.Clock();
-
-    function animate() {
-      requestAnimationFrame(animate);
-      const delta = clock.getDelta();
-      const time = clock.getElapsedTime();
-
-      if (targetCamPos) {
-        camera.position.lerp(targetCamPos, 0.08);
-        controls.target.lerp(targetLookAt, 0.08);
-        if (camera.position.distanceTo(targetCamPos) < 0.2) {
-          targetCamPos = null;
-        }
-      }
-
-      if (!isScanMode && controls.state === -1) {
-        worldGroup.rotation.y += 0.001;
-      }
-
-      if (particleSystem) {
-        const positions = particleSystem.geometry.attributes.position.array;
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-          const spd = particleSpeeds[i];
-          positions[i * 3 + 1] -= spd.y;
-          positions[i * 3 + 0] += Math.sin(time + i) * 0.02 + spd.x;
-          positions[i * 3 + 2] += Math.cos(time + i) * 0.02;
-
-          if (positions[i * 3 + 1] < 0) {
-            positions[i * 3 + 1] = 20;
-            positions[i * 3 + 0] = (Math.random() - 0.5) * 35;
-            positions[i * 3 + 2] = (Math.random() - 0.5) * 35;
-          }
-        }
-        particleSystem.geometry.attributes.position.needsUpdate = true;
-      }
-
-      controls.update();
-      renderer.render(scene, camera);
-    }
-
-    animate();
-
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
+    window.addEventListener('resize', function () {
+      camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(container.clientWidth, container.clientHeight);
     });
-  </script>
+
+    rebuildScene();
+    animate();
+  }
+
+  // ── Animate loop ───────────────────────────────────────────────────────────
+  function animate() {
+    requestAnimationFrame(animate);
+    var t = clock.getElapsedTime();
+
+    cam.pitch += (cam.tPitch - cam.pitch) * 0.09;
+    cam.yaw   += (cam.tYaw   - cam.yaw)   * 0.09;
+    cam.dist  += (cam.tDist  - cam.dist)  * 0.09;
+    camera.position.set(
+      cam.dist * Math.sin(cam.pitch) * Math.sin(cam.yaw),
+      cam.dist * Math.cos(cam.pitch),
+      cam.dist * Math.sin(cam.pitch) * Math.cos(cam.yaw)
+    );
+    camera.lookAt(0, 3.5, 0);
+
+    if (petalMesh) {
+      var pts = petalMesh.geometry.attributes.position.array;
+      var n   = pts.length / 3;
+      for (var i = 0; i < n; i++) {
+        pts[i*3]   += Math.sin(t * 0.4 + i * 1.3)  * 0.012;
+        pts[i*3+1] -= 0.028 + Math.sin(t * 0.3 + i) * 0.006;
+        pts[i*3+2] += Math.cos(t * 0.4 + i * 1.7)  * 0.012;
+        if (pts[i*3+1] < -1) {
+          pts[i*3]   = (Math.random()-0.5)*34;
+          pts[i*3+1] = 20 + Math.random() * 8;
+          pts[i*3+2] = (Math.random()-0.5)*34;
+        }
+      }
+      petalMesh.geometry.attributes.position.needsUpdate = true;
+    }
+
+    if (treeGroup && !state.scanMode) treeGroup.rotation.y = Math.sin(t * 0.4) * 0.012;
+
+    renderer.render(scene, camera);
+  }
+
+  // ── Palette Swatches ───────────────────────────────────────────────────────
+  var swatchContainer = document.getElementById('swatches');
+  PALETTES.forEach(function (p, i) {
+    var b = document.createElement('button');
+    b.className = 'swatch' + (i === state.palette ? ' active' : '');
+    b.style.background = p.color;
+    b.title = p.name;
+    b.addEventListener('click', function () {
+      state.palette = i;
+      document.querySelectorAll('.swatch').forEach(function (s, j) { s.classList.toggle('active', j===i); });
+      rebuildScene();
+    });
+    swatchContainer.appendChild(b);
+  });
+
+  // ── Season Buttons ─────────────────────────────────────────────────────────
+  document.querySelectorAll('.season-btn').forEach(function (btn) {
+    var i = parseInt(btn.dataset.i);
+    btn.classList.toggle('active', i === state.season);
+    btn.addEventListener('click', function () {
+      state.season = i;
+      document.querySelectorAll('.season-btn').forEach(function (b, j) { b.classList.toggle('active', j===i); });
+      rebuildScene();
+    });
+  });
+
+  // ── URL input & Generate ───────────────────────────────────────────────────
+  var urlInput = document.getElementById('url-input');
+  urlInput.value = state.url;
+
+  function generate() {
+    var v = urlInput.value.trim();
+    if (!v) return;
+    state.url = cleanUrl(v);
+    urlInput.value = state.url;
+    rebuildScene();
+  }
+  document.getElementById('btn-gen').addEventListener('click', generate);
+  urlInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') generate(); });
+
+  // ── Re-seed ────────────────────────────────────────────────────────────────
+  document.getElementById('btn-reseed').addEventListener('click', function () {
+    state.seed = Math.floor(Math.random() * 999999);
+    rebuildScene();
+  });
+
+  // ── Scan Mode Toggle ───────────────────────────────────────────────────────
+  document.getElementById('btn-scan').addEventListener('click', function () {
+    state.scanMode = !state.scanMode;
+    document.getElementById('btn-scan').classList.toggle('active', state.scanMode);
+    document.getElementById('scan-label').textContent = state.scanMode ? '3D View' : 'Scan QR';
+    if (state.scanMode) {
+      cam.tPitch = 0.001; cam.tDist = 36;
+    } else {
+      cam.tPitch = 0.78;  cam.tDist = 46;
+    }
+    rebuildScene();
+  });
+
+  // ── Download PNG ───────────────────────────────────────────────────────────
+  document.getElementById('btn-download').addEventListener('click', function () {
+    if (!renderer) return;
+    renderer.render(scene, camera);
+    var a = document.createElement('a');
+    a.href     = renderer.domElement.toDataURL('image/png');
+    a.download = 'cruseqr-magic-tree-' + SEASONS[state.season].name.toLowerCase() + '.png';
+    a.click();
+  });
+
+  // ── Ambient Wind Sound ─────────────────────────────────────────────────────
+  var audioCtx = null, audioSrc = null;
+  document.getElementById('btn-sound').addEventListener('click', function () {
+    var btn = this;
+    if (state.muted) {
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        var buf  = audioCtx.createBuffer(1, audioCtx.sampleRate * 3, audioCtx.sampleRate);
+        var data = buf.getChannelData(0);
+        for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+        audioSrc = audioCtx.createBufferSource();
+        audioSrc.buffer = buf; audioSrc.loop = true;
+        var f = audioCtx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=400; f.Q.value=3;
+        var g = audioCtx.createGain();         g.gain.value = 0.06;
+        audioSrc.connect(f); f.connect(g); g.connect(audioCtx.destination);
+        audioSrc.start();
+        state.muted = false;
+        btn.style.color = '#10b981';
+        btn.title = 'Mute';
+      } catch (e) {}
+    } else {
+      if (audioSrc) { try { audioSrc.stop(); } catch(e){} audioSrc = null; }
+      state.muted = true;
+      btn.style.color = '';
+      btn.title = 'Ambient Wind';
+    }
+  });
+
+  // ── Share Modal ────────────────────────────────────────────────────────────
+  function getShareUrl() {
+    try {
+      var q = btoa(state.season + '' + state.palette + (state.url || ''));
+      return location.origin + location.pathname + '?q=' + q;
+    } catch (e) { return location.href; }
+  }
+  document.getElementById('btn-share').addEventListener('click', function () {
+    document.getElementById('share-url-display').value = getShareUrl();
+    document.getElementById('modal-bg').classList.add('open');
+  });
+  document.getElementById('modal-bg').addEventListener('click', function (e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+  document.getElementById('modal-close').addEventListener('click', function () {
+    document.getElementById('modal-bg').classList.remove('open');
+  });
+  document.getElementById('copy-btn').addEventListener('click', function () {
+    var val = document.getElementById('share-url-display').value;
+    navigator.clipboard.writeText(val).then(function () {
+      document.getElementById('copy-label').textContent = 'Copied!';
+      setTimeout(function () { document.getElementById('copy-label').textContent = 'Copy'; }, 2000);
+    }).catch(function () {
+      document.getElementById('share-url-display').select();
+      document.execCommand('copy');
+    });
+  });
+
+  // ── Wait for Three.js then initialize ──────────────────────────────────────
+  function waitThree() {
+    if (window.THREE && window.qrcode) {
+      initThree();
+    } else {
+      setTimeout(waitThree, 80);
+    }
+  }
+  waitThree();
+
+})();
+</script>
 </body>
 </html>
 `;
 
-fs.writeFileSync("/Users/kaushal/Downloads/cruseqr/gh-pages/index.html", html, "utf8");
-console.log("Successfully generated gh-pages/index.html!");
-
+fs.writeFileSync(path.join(__dirname, "../gh-pages/index.html"), html);
+console.log("Successfully built gh-pages/index.html with inlined qrcode generator!");

@@ -5,20 +5,52 @@ import { useSearchParams } from "next/navigation";
 import * as THREE from "three";
 import QRCode from "qrcode";
 
-// ─── ICQR Query Format ────────────────────────────────────────────────────────
-// ?q=MDBodHRwczovL2ljcXIuY29tLw  =>  atob("MDB...") = "00https://icqr.com/"
-// char[0] = seasonIndex (0-3), char[1] = paletteIndex, rest = URL
+// ─── Query Format & URL Handling ─────────────────────────────────────────────
+// Format: [seasonIndex (0-3)][paletteIndex (0-5)][targetUrl...]
+// Fallback: uses the current site URL (no hardcoded third-party domains)
+function getDefaultUrl(): string {
+  if (typeof window !== "undefined" && window.location.origin && window.location.origin !== "null") {
+    return window.location.origin + window.location.pathname;
+  }
+  return "https://kaushalboii.github.io/cruseqr/";
+}
+
+function sanitizeUrl(rawUrl: string | null | undefined): string {
+  if (!rawUrl) return getDefaultUrl();
+  const trimmed = rawUrl.trim();
+  // Strip out old/demo placeholders
+  if (
+    trimmed === "https://icqr.com/" ||
+    trimmed === "https://icqr.com" ||
+    trimmed === "https://cruseqr.com/" ||
+    trimmed === "https://cruseqr.com" ||
+    trimmed === ""
+  ) {
+    return getDefaultUrl();
+  }
+  return trimmed.startsWith("http") ? trimmed : `https://${trimmed}`;
+}
+
 function parseQ(raw: string | null) {
-  if (!raw) return { url: "https://icqr.com/", season: 0, palette: 0 };
+  if (!raw) return { url: getDefaultUrl(), season: 0, palette: 0 };
   try {
     const d = atob(raw);
+    let s = 0;
+    let p = 0;
+    let target = d;
+
+    if (d.length >= 2 && !isNaN(Number(d[0])) && !isNaN(Number(d[1]))) {
+      s = Math.min(3, Math.max(0, parseInt(d[0]) || 0));
+      p = Math.min(5, Math.max(0, parseInt(d[1]) || 0));
+      target = d.slice(2);
+    }
     return {
-      url: d.slice(2) || "https://icqr.com/",
-      season: Math.min(3, Math.max(0, parseInt(d[0]) || 0)),
-      palette: Math.min(5, Math.max(0, parseInt(d[1]) || 0)),
+      url: sanitizeUrl(target),
+      season: s,
+      palette: p,
     };
   } catch {
-    return { url: "https://icqr.com/", season: 0, palette: 0 };
+    return { url: getDefaultUrl(), season: 0, palette: 0 };
   }
 }
 function encodeQ(url: string, season: number, palette: number) {
@@ -406,6 +438,7 @@ export default function MagicTreeCanvas() {
       treeGroup.remove(c);
     }
     buildTree(treeGroup, s.trunk, s.leaves, paletteHex, seed);
+    treeGroup.visible = !scanMode;
 
     // Rebuild petals
     if (petalRef.current) scene.remove(petalRef.current);
