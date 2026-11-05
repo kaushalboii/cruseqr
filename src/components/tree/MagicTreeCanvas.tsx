@@ -19,8 +19,12 @@ function sanitizeUrl(rawUrl: string | null | undefined): string {
   if (
     trimmed === "https://icqr.com/" ||
     trimmed === "https://icqr.com" ||
+    trimmed === "http://icqr.com/" ||
+    trimmed === "http://icqr.com" ||
     trimmed === "https://cruseqr.com/" ||
     trimmed === "https://cruseqr.com" ||
+    trimmed === "http://cruseqr.com/" ||
+    trimmed === "http://cruseqr.com" ||
     trimmed === ""
   ) {
     return getDefaultUrl();
@@ -100,7 +104,7 @@ const SEASONS = [
     leafHighlight: 0xffb74d,
     finderColor: 0xbf360c,
     particleColor: 0xef6c00,
-    weatherType: "autumnLeaves"
+    weatherType: "rain"
   }
 ];
 
@@ -335,10 +339,16 @@ export default function MagicTreeCanvas() {
       if (particleRef.current) {
         const pts = particleRef.current.geometry.attributes.position.array as Float32Array;
         const n = pts.length / 3;
+        const isRain = SEASONS[season]?.weatherType === "rain";
         for (let i = 0; i < n; i++) {
-          pts[i * 3]     += Math.sin(t * 0.75 + i * 1.1) * 0.018 + 0.008;
-          pts[i * 3 + 1] -= 0.026 + Math.sin(t * 0.6 + i) * 0.006;
-          pts[i * 3 + 2] += Math.cos(t * 0.65 + i * 1.4) * 0.016;
+          if (isRain) {
+            pts[i * 3 + 1] -= 0.32;
+            pts[i * 3]     += 0.025;
+          } else {
+            pts[i * 3]     += Math.sin(t * 0.75 + i * 1.1) * 0.018 + 0.008;
+            pts[i * 3 + 1] -= 0.026 + Math.sin(t * 0.6 + i) * 0.006;
+            pts[i * 3 + 2] += Math.cos(t * 0.65 + i * 1.4) * 0.016;
+          }
 
           if (pts[i * 3 + 1] < 0) {
             pts[i * 3]     = (Math.random() - 0.5) * 32;
@@ -589,7 +599,7 @@ export default function MagicTreeCanvas() {
       treeGroup.add(bMesh);
 
       if (depth >= 2 || len < 1.1) {
-        const clustersAtTip = 16 + Math.floor(treeRng() * 14);
+        const clustersAtTip = 24 + Math.floor(treeRng() * 16);
         for (let k = 0; k < clustersAtTip; k++) {
           leafClusterPositions.push({
             x: ex + (treeRng() - 0.5) * 1.5,
@@ -627,20 +637,20 @@ export default function MagicTreeCanvas() {
     addBough(trunkPoints[3].x, trunkPoints[3].y, trunkPoints[3].z, 0.55, 0.5, -0.5, 1.7, 0.2, 1);
 
     // Crown Dome & Weeping Sprays
-    for (let v = 0; v < 420; v++) {
+    for (let v = 0; v < 750; v++) {
       const theta = treeRng() * Math.PI * 2;
       const phi   = treeRng() * Math.PI * 0.58;
       const rad   = 1.2 + treeRng() * 3.4;
       leafClusterPositions.push({
         x: Math.sin(phi) * Math.cos(theta) * rad,
-        y: 5.8 + Math.cos(phi) * (rad * 0.7) + (treeRng() - 0.5) * 1.1,
+        y: 5.6 + Math.cos(phi) * (rad * 0.7) + (treeRng() - 0.5) * 1.1,
         z: Math.sin(phi) * Math.sin(theta) * rad,
         scale: 0.35 + treeRng() * 0.35,
         tier: 5
       });
     }
 
-    for (let w = 0; w < 220; w++) {
+    for (let w = 0; w < 420; w++) {
       const wTheta = treeRng() * Math.PI * 2;
       const wRad   = 2.8 + treeRng() * 2.2;
       leafClusterPositions.push({
@@ -652,12 +662,25 @@ export default function MagicTreeCanvas() {
       });
     }
 
-    // Instanced Micro-Petal Blossom Cloud (1,600+ elements)
+    // Mid mantle clusters
+    for (let m = 0; m < 380; m++) {
+      const mTheta = treeRng() * Math.PI * 2;
+      const mRad = 1.0 + treeRng() * 2.8;
+      leafClusterPositions.push({
+        x: Math.cos(mTheta) * mRad,
+        y: 4.2 + (treeRng() - 0.5) * 1.8,
+        z: Math.sin(mTheta) * mRad,
+        scale: 0.30 + treeRng() * 0.30,
+        tier: 4
+      });
+    }
+
+    // Instanced Micro-Petal Blossom Cloud (3,500+ elements)
     const totalClusters = leafClusterPositions.length;
-    const clusterGeo = new THREE.IcosahedronGeometry(0.52, 1);
+    const clusterGeo = new THREE.DodecahedronGeometry(0.24, 0);
     const blossomMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
-      roughness: 0.42,
+      roughness: 0.38,
       metalness: 0.02,
       flatShading: true
     });

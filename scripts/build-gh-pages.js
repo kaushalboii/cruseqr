@@ -497,13 +497,36 @@ ${qrcodeLib}
       leafHighlight: 0xffb74d,
       finderColor: 0xbf360c,
       particleColor: 0xef6c00,
-      weatherType: "autumnLeaves"
+      weatherType: "rain"
     }
   ];
 
+  function getDefaultPageUrl() {
+    try {
+      if (typeof window !== "undefined" && window.location) {
+        return window.location.origin + window.location.pathname;
+      }
+    } catch(e) {}
+    return "https://kaushalboii.github.io/cruseqr/";
+  }
+
   function cleanUrl(s) {
-    if (!s) return location.href;
+    var def = getDefaultPageUrl();
+    if (!s) return def;
     var trimmed = s.trim();
+    if (
+      trimmed === "https://icqr.com/" ||
+      trimmed === "https://icqr.com" ||
+      trimmed === "http://icqr.com/" ||
+      trimmed === "http://icqr.com" ||
+      trimmed === "https://cruseqr.com/" ||
+      trimmed === "https://cruseqr.com" ||
+      trimmed === "http://cruseqr.com/" ||
+      trimmed === "http://cruseqr.com" ||
+      trimmed === ""
+    ) {
+      return def;
+    }
     if (trimmed.indexOf("http://") === 0 || trimmed.indexOf("https://") === 0) {
       return trimmed;
     }
@@ -527,7 +550,7 @@ ${qrcodeLib}
       }
     } catch(e) {}
     return {
-      url: window.location.href,
+      url: getDefaultPageUrl(),
       season: 0,
       palette: 0
     };
@@ -933,7 +956,7 @@ ${qrcodeLib}
 
       // Collect endpoints for dense micro-petal spray clusters
       if (depth >= 2 || len < 1.1) {
-        var clustersAtTip = 16 + Math.floor(rng() * 14);
+        var clustersAtTip = 24 + Math.floor(rng() * 16);
         for (var k = 0; k < clustersAtTip; k++) {
           leafClusterPositions.push({
             x: ex + (rng() - 0.5) * 1.5,
@@ -974,8 +997,8 @@ ${qrcodeLib}
     addBough(trunkPoints[3].x, trunkPoints[3].y, trunkPoints[3].z, 0.55, 0.5, -0.5, 1.7, 0.2, 1);
 
     // 4. Volumetric Crown Dome & Weeping Outer Cherry Blossom Sprays
-    var crownCenterY = 5.8;
-    for (var v = 0; v < 420; v++) {
+    var crownCenterY = 5.6;
+    for (var v = 0; v < 750; v++) {
       var theta = rng() * Math.PI * 2;
       var phi   = rng() * Math.PI * 0.58;
       var rad   = 1.2 + rng() * 3.4;
@@ -989,7 +1012,7 @@ ${qrcodeLib}
     }
 
     // Weeping outer boughs cascading gently downward (authentic Sakura feature)
-    for (var w = 0; w < 220; w++) {
+    for (var w = 0; w < 420; w++) {
       var wTheta = rng() * Math.PI * 2;
       var wRad   = 2.8 + rng() * 2.2;
       leafClusterPositions.push({
@@ -1001,14 +1024,27 @@ ${qrcodeLib}
       });
     }
 
-    // 5. Instanced Micro-Petal Blossom Cloud (1,600+ elements)
+    // Mid mantle clusters
+    for (var m = 0; m < 380; m++) {
+      var mTheta = rng() * Math.PI * 2;
+      var mRad = 1.0 + rng() * 2.8;
+      leafClusterPositions.push({
+        x: Math.cos(mTheta) * mRad,
+        y: 4.2 + (rng() - 0.5) * 1.8,
+        z: Math.sin(mTheta) * mRad,
+        scale: 0.30 + rng() * 0.30,
+        tier: 4
+      });
+    }
+
+    // 5. Instanced Micro-Blossom Foliage Cloud (3,500+ elements)
     var totalClusters = leafClusterPositions.length;
-    // Multi-faceted soft botanical blossom geometry
-    var clusterGeo = new THREE.IcosahedronGeometry(0.52, 1);
+    // Micro faceted dodecahedron creates authentic soft fluffy organic blossom clusters
+    var clusterGeo = new THREE.DodecahedronGeometry(0.24, 0);
 
     var blossomMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
-      roughness: 0.42,
+      roughness: 0.38,
       metalness: 0.02,
       flatShading: true
     });
