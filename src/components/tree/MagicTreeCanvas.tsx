@@ -106,13 +106,24 @@ async function buildQRBlocks(
   url: string,
   blockColor: number,
   scanMode: boolean
-): Promise<THREE.InstancedMesh | null> {
+): Promise<THREE.Group | null> {
   try {
     const qrData = await QRCode.create(url, { errorCorrectionLevel: "M" });
     const { modules } = qrData;
     const size = modules.size;
     const bs = 0.56; // block size
     const offset = (size * bs) / 2;
+
+    const group = new THREE.Group();
+
+    // White base plate under QR code for crisp contrast & mobile phone scannability
+    const plateW = (size + 2) * bs;
+    const plateGeo = new THREE.BoxGeometry(plateW, 0.06, plateW);
+    const plateMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85 });
+    const plate = new THREE.Mesh(plateGeo, plateMat);
+    plate.position.y = 0.03;
+    plate.receiveShadow = true;
+    group.add(plate);
 
     // Count dark modules
     let count = 0;
@@ -145,7 +156,8 @@ async function buildQRBlocks(
       }
     }
     mesh.instanceMatrix.needsUpdate = true;
-    return mesh;
+    group.add(mesh);
+    return group;
   } catch {
     return null;
   }

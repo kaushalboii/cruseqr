@@ -180,7 +180,7 @@ if (!window.THREE) {
     if (s === 'https://icqr.com/' || s === 'https://icqr.com' || s === 'https://cruseqr.com/' || s === 'https://cruseqr.com' || s === '') {
       return getDefaultUrl();
     }
-    return s.match(/^https?:\\\\/\\\\//) ? s : ('https://' + s);
+    return (s.indexOf('http://') === 0 || s.indexOf('https://') === 0) ? s : ('https://' + s);
   }
 
   // ── Seasons ────────────────────────────────────────────────────────────────
@@ -249,6 +249,17 @@ if (!window.THREE) {
       if (count === 0) return null;
 
       var THREE = window.THREE;
+      var group = new THREE.Group();
+
+      // White base plate for contrast & phone scannability
+      var plateW = (size + 2) * bs;
+      var pGeo = new THREE.BoxGeometry(plateW, 0.06, plateW);
+      var pMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85 });
+      var plate = new THREE.Mesh(pGeo, pMat);
+      plate.position.y = 0.03;
+      plate.receiveShadow = true;
+      group.add(plate);
+
       var geo   = new THREE.BoxGeometry(bs * 0.9, 0.42, bs * 0.9);
       var mat   = new THREE.MeshStandardMaterial({ color: blockColor, roughness: 0.5, metalness: 0.05 });
       var mesh  = new THREE.InstancedMesh(geo, mat, count);
@@ -271,7 +282,8 @@ if (!window.THREE) {
         }
       }
       mesh.instanceMatrix.needsUpdate = true;
-      return mesh;
+      group.add(mesh);
+      return group;
     } catch (e) {
       console.warn('QR build error:', e);
       return null;
