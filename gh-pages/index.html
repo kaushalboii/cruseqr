@@ -1,877 +1,569 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CruseQR 3D Magic Tree — Living Procedural 3D QR Code</title>
-  <meta name="description" content="Generate and experience living 3D procedural QR code trees with seasonal themes, falling petals, wind physics, and instant mobile phone scannability." />
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2'%3E%3Cpath d='M3 7V5a2 2 0 0 1 2-2h2'/%3E%3Cpath d='M17 3h2a2 2 0 0 1 2 2v2'/%3E%3Cpath d='M21 17v2a2 2 0 0 1-2 2h-2'/%3E%3Cpath d='M7 21H5a2 2 0 0 1-2-2v-2'/%3E%3Crect width='5' height='5' x='7' y='7' rx='1' fill='%2310b981'/%3E%3C/svg%3E" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <!-- Inlined rock-solid QR Code Generator (zero CDN failures) -->
-  <script>
-var qrcode=function(){function i(t,r){function a(t,r){g=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(l=4*u+17),e(0,0),e(l-7,0),e(0,l-7),i(),o(),v(t,r),7<=u&&h(t),null==n&&(n=w(u,f,c)),d(n,r)}var u=t,f=y[r],g=null,l=0,n=null,c=[],s={},e=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||l<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||l<=r+n||(g[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},o=function(){for(var t=8;t<l-8;t+=1)null==g[t][6]&&(g[t][6]=t%2==0);for(var r=8;r<l-8;r+=1)null==g[6][r]&&(g[6][r]=r%2==0)},i=function(){for(var t=B.getPatternPosition(u),r=0;r<t.length;r+=1)for(var e=0;e<t.length;e+=1){var n=t[r],o=t[e];if(null==g[n][o])for(var i=-2;i<=2;i+=1)for(var a=-2;a<=2;a+=1)g[n+i][o+a]=-2==i||2==i||-2==a||2==a||0==i&&0==a}},h=function(t){for(var r=B.getBCHTypeNumber(u),e=0;e<18;e+=1){var n=!t&&1==(r>>e&1);g[Math.floor(e/3)][e%3+l-8-3]=n}for(e=0;e<18;e+=1){n=!t&&1==(r>>e&1);g[e%3+l-8-3][Math.floor(e/3)]=n}},v=function(t,r){for(var e=f<<3|r,n=B.getBCHTypeInfo(e),o=0;o<15;o+=1){var i=!t&&1==(n>>o&1);o<6?g[o][8]=i:o<8?g[o+1][8]=i:g[l-15+o][8]=i}for(o=0;o<15;o+=1){i=!t&&1==(n>>o&1);o<8?g[8][l-o-1]=i:o<9?g[8][15-o-1+1]=i:g[8][15-o-1]=i}g[l-8][8]=!t},d=function(t,r){for(var e=-1,n=l-1,o=7,i=0,a=B.getMaskFunction(r),u=l-1;0<u;u-=2)for(6==u&&(u-=1);;){for(var f=0;f<2;f+=1)if(null==g[n][u-f]){var c=!1;i<t.length&&(c=1==(t[i]>>>o&1)),a(n,u-f)&&(c=!c),g[n][u-f]=c,-1==(o-=1)&&(i+=1,o=7)}if((n+=e)<0||l<=n){n-=e,e=-e;break}}},w=function(t,r,e){for(var n=b.getRSBlocks(t,r),o=M(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=C(i[u],l.getLength()-1).mod(l);a[u]=new Array(l.getLength()-1);for(g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=0<=s?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};s.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=x(t);break;case"Alphanumeric":e=m(t);break;case"Byte":e=L(t);break;case"Kanji":e=D(t);break;default:throw"mode:"+r}c.push(e),n=null},s.isDark=function(t,r){if(t<0||l<=t||r<0||l<=r)throw t+","+r;return g[t][r]},s.getModuleCount=function(){return l},s.make=function(){if(u<1){for(var t=1;t<40;t++){for(var r=b.getRSBlocks(t,f),e=M(),n=0;n<c.length;n++){var o=c[n];e.put(o.getMode(),4),e.put(o.getLength(),B.getLengthInBits(o.getMode(),t)),o.write(e)}var i=0;for(n=0;n<r.length;n++)i+=r[n].dataCount;if(e.getLengthInBits()<=8*i)break}u=t}a(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){a(!0,e);var n=B.getLostPoint(s);(0==e||n<t)&&(t=n,r=e)}return r}())},s.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<s.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<s.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=s.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},s.createSvgTag=function(t,r,e,n){var o={};"object"==typeof t&&(t=(o=t).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,f,c=s.getModuleCount()*t+2*r,g="";for(f="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",g+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',g+=o.scalable?"":' width="'+c+'px" height="'+c+'px"',g+=' viewBox="0 0 '+c+" "+c+'" ',g+=' preserveAspectRatio="xMinYMin meet"',g+=n.text||e.text?' role="img" aria-labelledby="'+p([n.id,e.id].join(" ").trim())+'"':"",g+=">",g+=n.text?'<title id="'+p(n.id)+'">'+p(n.text)+"</title>":"",g+=e.text?'<description id="'+p(e.id)+'">'+p(e.text)+"</description>":"",g+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',g+='<path d="',a=0;a<s.getModuleCount();a+=1)for(u=a*t+r,i=0;i<s.getModuleCount();i+=1)s.isDark(a,i)&&(g+="M"+(i*t+r)+","+u+f);return g+='" stroke="transparent" fill="black"/>',g+="</svg>"},s.createDataURL=function(o,t){o=o||2,t=void 0===t?4*o:t;var r=s.getModuleCount()*o+2*t,i=t,a=r-t;return I(r,r,function(t,r){if(i<=t&&t<a&&i<=r&&r<a){var e=Math.floor((t-i)/o),n=Math.floor((r-i)/o);return s.isDark(n,e)?0:1}return 1})},s.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=s.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=s.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=p(e),o+='"'),o+="/>"};var p=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return s.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*s.getModuleCount()+2*t,u=t,f=a-t,c={"██":"█","█ ":"▀"," █":"▄","  ":" "},g={"██":"▀","█ ":"▀"," █":" ","  ":" "},l="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<f&&u<=r&&r<f&&s.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<f&&u<=r+1&&r+1<f&&s.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",l+=t<1&&f<=r+1?g[i]:c[i];l+="\n"}return a%2&&0<t?l.substring(0,l.length-a-1)+Array(1+a).join("▀"):l.substring(0,l.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=s.getModuleCount()*t+2*r,u=r,f=a-r,c=Array(t+1).join("██"),g=Array(t+1).join("  "),l="",h="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),h="",n=0;n<a;n+=1)i=1,u<=n&&n<f&&u<=e&&e<f&&s.isDark(o,Math.floor((n-u)/t))&&(i=0),h+=i?c:g;for(o=0;o<t;o+=1)l+=h+"\n"}return l.substring(0,l.length-1)},s.renderTo2dContext=function(t,r){r=r||2;for(var e=s.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=s.isDark(n,o)?"black":"white",t.fillRect(n*r,o*r,r,r)},s}i.stringToBytes=(i.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,i.createStringToBytes=function(u,f){var i=function(){function t(){var t=r.read();if(-1==t)throw"eof";return t}for(var r=S(u),e=0,n={};;){var o=r.read();if(-1==o)break;var i=t(),a=t()<<8|t();n[String.fromCharCode(o<<8|i)]=a,e+=1}if(e!=f)throw e+" != "+f;return n}(),a="?".charCodeAt(0);return function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);if(n<128)r.push(n);else{var o=i[t.charAt(e)];"number"==typeof o?(255&o)==o?r.push(o):(r.push(o>>>8),r.push(255&o)):r.push(a)}}return r}};var r,t,a=1,u=2,o=4,f=8,y={L:1,M:0,Q:3,H:2},e=0,n=1,c=2,g=3,l=4,h=5,s=6,v=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],(t={}).getBCHTypeInfo=function(t){for(var r=t<<10;0<=d(r)-d(1335);)r^=1335<<d(r)-d(1335);return 21522^(t<<10|r)},t.getBCHTypeNumber=function(t){for(var r=t<<12;0<=d(r)-d(7973);)r^=7973<<d(r)-d(7973);return t<<12|r},t.getPatternPosition=function(t){return r[t-1]},t.getMaskFunction=function(t){switch(t){case e:return function(t,r){return(t+r)%2==0};case n:return function(t,r){return t%2==0};case c:return function(t,r){return r%3==0};case g:return function(t,r){return(t+r)%3==0};case l:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case h:return function(t,r){return t*r%2+t*r%3==0};case s:return function(t,r){return(t*r%2+t*r%3)%2==0};case v:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},t.getErrorCorrectPolynomial=function(t){for(var r=C([1],0),e=0;e<t;e+=1)r=r.multiply(C([1,w.gexp(e)],0));return r},t.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case o:case f:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case o:return 16;case f:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case o:return 16;case f:return 12;default:throw"mode:"+t}}},t.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);5<i&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},t);function d(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r}var w=function(){for(var r=new Array(256),e=new Array(256),t=0;t<8;t+=1)r[t]=1<<t;for(t=8;t<256;t+=1)r[t]=r[t-4]^r[t-5]^r[t-6]^r[t-8];for(t=0;t<255;t+=1)e[r[t]]=t;var n={glog:function(t){if(t<1)throw"glog("+t+")";return e[t]},gexp:function(t){for(;t<0;)t+=255;for(;256<=t;)t-=255;return r[t]}};return n}();function C(n,o){if(void 0===n.length)throw n.length+"/"+o;var r=function(){for(var t=0;t<n.length&&0==n[t];)t+=1;for(var r=new Array(n.length-t+o),e=0;e<n.length-t;e+=1)r[e]=n[e+t];return r}(),i={getAt:function(t){return r[t]},getLength:function(){return r.length},multiply:function(t){for(var r=new Array(i.getLength()+t.getLength()-1),e=0;e<i.getLength();e+=1)for(var n=0;n<t.getLength();n+=1)r[e+n]^=w.gexp(w.glog(i.getAt(e))+w.glog(t.getAt(n)));return C(r,0)},mod:function(t){if(i.getLength()-t.getLength()<0)return i;for(var r=w.glog(i.getAt(0))-w.glog(t.getAt(0)),e=new Array(i.getLength()),n=0;n<i.getLength();n+=1)e[n]=i.getAt(n);for(n=0;n<t.getLength();n+=1)e[n]^=w.gexp(w.glog(t.getAt(n))+r);return C(e,0).mod(t)}};return i}function p(){var e=[],o={writeByte:function(t){e.push(255&t)},writeShort:function(t){o.writeByte(t),o.writeByte(t>>>8)},writeBytes:function(t,r,e){r=r||0,e=e||t.length;for(var n=0;n<e;n+=1)o.writeByte(t[n+r])},writeString:function(t){for(var r=0;r<t.length;r+=1)o.writeByte(t.charCodeAt(r))},toByteArray:function(){return e},toString:function(){var t="";t+="[";for(var r=0;r<e.length;r+=1)0<r&&(t+=","),t+=e[r];return t+="]"}};return o}var k,A,b=(k=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],(A={}).getRSBlocks=function(t,r){var e=function(t,r){switch(r){case y.L:return k[4*(t-1)+0];case y.M:return k[4*(t-1)+1];case y.Q:return k[4*(t-1)+2];case y.H:return k[4*(t-1)+3];default:return}}(t,r);if(void 0===e)throw"bad rs block @ typeNumber:"+t+"/errorCorrectionLevel:"+r;for(var n,o,i=e.length/3,a=[],u=0;u<i;u+=1)for(var f=e[3*u+0],c=e[3*u+1],g=e[3*u+2],l=0;l<f;l+=1)a.push((n=g,o=void 0,(o={}).totalCount=c,o.dataCount=n,o));return a},A),M=function(){var e=[],n=0,o={getBuffer:function(){return e},getAt:function(t){var r=Math.floor(t/8);return 1==(e[r]>>>7-t%8&1)},put:function(t,r){for(var e=0;e<r;e+=1)o.putBit(1==(t>>>r-e-1&1))},getLengthInBits:function(){return n},putBit:function(t){var r=Math.floor(n/8);e.length<=r&&e.push(0),t&&(e[r]|=128>>>n%8),n+=1}};return o},x=function(t){var r=a,n=t,e={getMode:function(){return r},getLength:function(t){return n.length},write:function(t){for(var r=n,e=0;e+2<r.length;)t.put(o(r.substring(e,e+3)),10),e+=3;e<r.length&&(r.length-e==1?t.put(o(r.substring(e,e+1)),4):r.length-e==2&&t.put(o(r.substring(e,e+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return e},m=function(t){var r=u,n=t,e={getMode:function(){return r},getLength:function(t){return n.length},write:function(t){for(var r=n,e=0;e+1<r.length;)t.put(45*o(r.charAt(e))+o(r.charAt(e+1)),11),e+=2;e<r.length&&t.put(o(r.charAt(e)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return e},L=function(t){var r=o,e=i.stringToBytes(t),n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=0;r<e.length;r+=1)t.put(e[r],8)}};return n},D=function(t){var r=f,e=i.stringToBytesFuncs.SJIS;if(!e)throw"sjis not supported.";!function(){var t=e("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=e(t),n={getMode:function(){return r},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return n},S=function(t){var e=t,n=0,o=0,i=0,r={read:function(){for(;i<8;){if(n>=e.length){if(0==i)return-1;throw"unexpected end of file./"+i}var t=e.charAt(n);if(n+=1,"="==t)return i=0,-1;t.match(/^\s$/)||(o=o<<6|a(t.charCodeAt(0)),i+=6)}var r=o>>>i-8&255;return i-=8,r}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return r},I=function(t,r,e){for(var n=function(t,r){var n=t,o=r,l=new Array(t*r),e={setPixel:function(t,r,e){l[r*n+t]=e},write:function(t){t.writeString("GIF87a"),t.writeShort(n),t.writeShort(o),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(n),t.writeShort(o),t.writeByte(0);var r=i(2);t.writeByte(2);for(var e=0;255<r.length-e;)t.writeByte(255),t.writeBytes(r,e,255),e+=255;t.writeByte(r.length-e),t.writeBytes(r,e,r.length-e),t.writeByte(0),t.writeString(";")}},i=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,o=h(),i=0;i<r;i+=1)o.add(String.fromCharCode(i));o.add(String.fromCharCode(r)),o.add(String.fromCharCode(e));var a=p(),u=function(t){var e=t,n=0,o=0,r={write:function(t,r){if(t>>>r!=0)throw"length over";for(;8<=n+r;)e.writeByte(255&(t<<n|o)),r-=8-n,t>>>=8-n,n=o=0;o|=t<<n,n+=r},flush:function(){0<n&&e.writeByte(o)}};return r}(a);u.write(r,n);var f=0,c=String.fromCharCode(l[f]);for(f+=1;f<l.length;){var g=String.fromCharCode(l[f]);f+=1,o.contains(c+g)?c+=g:(u.write(o.indexOf(c),n),o.size()<4095&&(o.size()==1<<n&&(n+=1),o.add(c+g)),c=g)}return u.write(o.indexOf(c),n),u.write(e,n),u.flush(),a.toByteArray()},h=function(){var r={},e=0,n={add:function(t){if(n.contains(t))throw"dup key:"+t;r[t]=e,e+=1},size:function(){return e},indexOf:function(t){return r[t]},contains:function(t){return void 0!==r[t]}};return n};return e}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=p();n.write(a);for(var u=function(){function e(t){a+=String.fromCharCode(r(63&t))}var n=0,o=0,i=0,a="",t={},r=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return t.writeByte=function(t){for(n=n<<8|255&t,o+=8,i+=1;6<=o;)e(n>>>o-6),o-=6},t.flush=function(){if(0<o&&(e(n<<6-o),o=n=0),i%3!=0)for(var t=3-i%3,r=0;r<t;r+=1)a+="="},t.toString=function(){return a},t}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return i}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||57344<=n?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}(function(){return qrcode});
-  </script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CruseQR Magic Tree</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5ede2;}
+  #canvas-container{position:fixed;inset:0;cursor:grab;}
+  #canvas-container:active{cursor:grabbing;}
+  canvas{display:block;width:100%!important;height:100%!important;}
+
+  /* Top bar */
+  #topbar{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;pointer-events:none;}
+  .logo-pill{pointer-events:auto;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.92);border:1px solid #e7e5e4;border-radius:18px;padding:8px 14px;box-shadow:0 2px 12px rgba(0,0,0,0.08);backdrop-filter:blur(12px);}
+  .logo-pill span.brand{font-size:14px;font-weight:900;letter-spacing:-0.3px;color:#1c1917;}
+  .logo-pill span.accent{color:#d97706;}
+  .logo-pill span.badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:999px;padding:2px 8px;}
+  .topbar-actions{pointer-events:auto;display:flex;align-items:center;gap:8px;}
+  .icon-btn{width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,0.92);border:1px solid #e7e5e4;box-shadow:0 2px 8px rgba(0,0,0,0.08);backdrop-filter:blur(12px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.1s,background 0.15s;color:#57534e;}
+  .icon-btn:hover{background:#fff;}
+  .icon-btn:active{transform:scale(0.9);}
+  .scan-btn{height:36px;padding:0 14px;border-radius:12px;background:rgba(255,255,255,0.92);border:1px solid #e7e5e4;box-shadow:0 2px 8px rgba(0,0,0,0.08);backdrop-filter:blur(12px);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#44403c;transition:all 0.15s;}
+  .scan-btn:hover{background:#fff;}
+  .scan-btn.active{background:#1c1917;color:#fff;border-color:#1c1917;}
+  .share-btn{height:36px;padding:0 14px;border-radius:12px;background:#d97706;border:none;box-shadow:0 2px 8px rgba(217,119,6,0.3);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#fff;transition:all 0.15s;}
+  .share-btn:hover{background:#b45309;}
+  .share-btn:active{transform:scale(0.95);}
+
+  /* Bottom dock */
+  #dock{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:520px;z-index:30;pointer-events:none;}
+  .dock-inner{background:rgba(255,255,255,0.93);border:1px solid #e7e5e4;border-radius:26px;padding:16px;box-shadow:0 8px 40px rgba(0,0,0,0.12);backdrop-filter:blur(20px);pointer-events:auto;}
+  .url-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .url-input{flex:1;padding:10px 14px;border-radius:14px;background:#f5f5f4;border:1px solid #e7e5e4;font-size:12px;font-weight:600;color:#1c1917;outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+  .url-input:focus{border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.15);}
+  .gen-btn{padding:10px 16px;border-radius:14px;background:#1c1917;border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:background 0.15s;}
+  .gen-btn:hover{background:#000;}
+  .gen-btn:active{transform:scale(0.95);}
+  .gen-btn svg{color:#f59e0b;}
+  .seasons{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;}
+  .season-btn{padding:8px;border-radius:12px;background:#f5f5f4;border:1px solid transparent;font-size:12px;font-weight:600;color:#57534e;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;transition:all 0.15s;}
+  .season-btn:hover{background:#e7e5e4;}
+  .season-btn.active{background:#fef3c7;border-color:#fcd34d;color:#78350f;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+  .palette-row{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid #e7e5e4;}
+  .palette-label{font-size:11px;font-weight:600;color:#78716c;letter-spacing:0.04em;}
+  .swatches{display:flex;align-items:center;gap:8px;}
+  .swatch{width:20px;height:20px;border-radius:50%;cursor:pointer;transition:transform 0.15s,opacity 0.15s;opacity:0.8;}
+  .swatch:hover{transform:scale(1.1);opacity:1;}
+  .swatch.active{transform:scale(1.25);box-shadow:0 0 0 2px #fff,0 0 0 4px #1c1917;opacity:1;}
+
+  /* Hint */
+  #hint{position:fixed;bottom:112px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(0,0,0,0.38);font-weight:500;pointer-events:none;white-space:nowrap;}
+
+  /* Share modal */
+  #modal-bg{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px;}
+  #modal-bg.open{display:flex;}
+  #modal{background:#fff;border-radius:28px;padding:24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.25);}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .modal-title{font-size:15px;font-weight:900;color:#1c1917;}
+  .modal-close{font-size:18px;font-weight:700;color:#a8a29e;cursor:pointer;border:none;background:none;line-height:1;}
+  .modal-desc{font-size:12px;color:#78716c;margin-bottom:16px;line-height:1.6;}
+  .modal-url-row{display:flex;align-items:center;gap:8px;}
+  #share-url-input{flex:1;padding:10px 12px;border-radius:12px;background:#f5f5f4;border:1px solid #e7e5e4;font-size:11px;font-family:monospace;color:#44403c;outline:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .copy-btn{padding:10px 14px;border-radius:12px;background:#d97706;border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:background 0.15s;}
+  .copy-btn:hover{background:#b45309;}
+</style>
 </head>
-<body class="bg-stone-900 text-stone-100 font-sans antialiased overflow-hidden select-none">
+<body>
 
-  <!-- 3D WebGL Canvas Container -->
-  <div id="canvas-container" class="fixed inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></div>
+<!-- Top Bar -->
+<header id="topbar">
+  <div class="logo-pill">
+    <span class="brand">Cruse<span class="accent">QR</span></span>
+    <span class="badge">Magic Tree</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="btn-sound" title="Ambient Wind">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0 2-2m-2 2-2-2m2 2 2 2"/></svg>
+    </button>
+    <button class="icon-btn" id="btn-reseed" title="Grow New Tree">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+    </button>
+    <button class="icon-btn" id="btn-download" title="Download PNG">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+    </button>
+    <button class="scan-btn" id="btn-scan">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"/></svg>
+      <span id="scan-label">Scan QR</span>
+    </button>
+    <button class="share-btn" id="btn-share">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"/></svg>
+      Share
+    </button>
+  </div>
+</header>
 
-  <!-- Top Navigation Bar -->
-  <header class="fixed top-0 left-0 right-0 z-20 flex items-center justify-between px-4 sm:px-6 py-3 bg-stone-950/40 backdrop-blur-md border-b border-white/10 pointer-events-auto">
-    <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m-6-6 6 6 6-6M5 9l7-6 7 6" />
-        </svg>
-      </div>
-      <div>
-        <h1 class="text-sm sm:text-base font-bold tracking-tight text-white flex items-center gap-2">
-          CruseQR Magic Tree
-          <span class="text-[10px] font-medium uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">3D QR</span>
-        </h1>
-        <p class="text-[11px] text-stone-400 hidden sm:block">Inspired by ICQR • Living 3D Procedural Canopy</p>
-      </div>
-    </div>
+<!-- Canvas -->
+<div id="canvas-container"></div>
 
-    <!-- Right Controls -->
-    <div class="flex items-center gap-2 sm:gap-3">
-      <!-- InstaBox Backend Health Badge -->
-      <a id="backend-pill" href="https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech" target="_blank" rel="noopener noreferrer" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-900/80 border border-white/10 text-xs text-stone-300 hover:border-emerald-500/40 transition" title="InstaBox Backend Status">
-        <span id="backend-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-        <span id="backend-text" class="font-mono text-[11px]">Connecting backend...</span>
-      </a>
+<!-- Hint -->
+<div id="hint">↖ Left Click &amp; Drag: Orbit 3D</div>
 
-      <!-- Ambient Sound Toggle -->
-      <button id="btn-audio" class="p-2 sm:px-3 sm:py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium flex items-center gap-1.5 transition backdrop-blur-sm" title="Toggle Wind Ambiance">
-        <span id="audio-icon">🔇</span>
-        <span class="hidden sm:inline" id="audio-label">Sound Off</span>
+<!-- Bottom Dock -->
+<div id="dock">
+  <div class="dock-inner">
+    <div class="url-row">
+      <input class="url-input" id="url-input" type="text" value="https://cruseqr.com/" placeholder="https://your-link.com"/>
+      <button class="gen-btn" id="btn-gen">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+        Generate
       </button>
-
-      <!-- Scan Mode (Flat Top-Down View) -->
-      <button id="btn-scan-mode" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-500/25 transition">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-          <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z" />
-        </svg>
-        <span id="scan-mode-label">Scan Mode</span>
-      </button>
     </div>
-  </header>
-
-  <!-- Floating Left Controls (Seasonal Theme & Palettes) -->
-  <div class="fixed left-4 top-20 z-10 flex flex-col gap-3 pointer-events-auto max-w-[210px] sm:max-w-[240px]">
-    <!-- Season Switcher -->
-    <div class="p-2.5 rounded-2xl bg-stone-950/70 backdrop-blur-xl border border-white/10 shadow-2xl flex flex-col gap-1.5">
-      <div class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider px-1">Season</div>
-      <div class="grid grid-cols-2 gap-1.5" id="season-buttons"></div>
+    <div class="seasons" id="seasons">
+      <button class="season-btn active" data-i="0">🌸 <span>Spring</span></button>
+      <button class="season-btn" data-i="1">🍃 <span>Summer</span></button>
+      <button class="season-btn" data-i="2">🍂 <span>Autumn</span></button>
+      <button class="season-btn" data-i="3">❄️ <span>Winter</span></button>
     </div>
-
-    <!-- Color Palette Picker -->
-    <div class="p-2.5 rounded-2xl bg-stone-950/70 backdrop-blur-xl border border-white/10 shadow-2xl flex flex-col gap-1.5">
-      <div class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider px-1">Palette</div>
-      <div class="flex items-center justify-between px-1 py-1" id="palette-buttons"></div>
+    <div class="palette-row">
+      <span class="palette-label">COLOUR</span>
+      <div class="swatches" id="swatches"></div>
     </div>
+  </div>
+</div>
 
-    <!-- Tree Variations (Seed Randomizer) -->
-    <div class="p-2.5 rounded-2xl bg-stone-950/70 backdrop-blur-xl border border-white/10 shadow-2xl flex flex-col gap-1.5">
-      <div class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider px-1">Branch Form</div>
-      <button id="btn-random-seed" class="w-full py-1.5 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-xs text-white font-medium flex items-center justify-center gap-2 transition">
-        <span>🎲</span> Re-grow Canopy
+<!-- Share Modal -->
+<div id="modal-bg">
+  <div id="modal">
+    <div class="modal-header">
+      <span class="modal-title">Share Your Magic Tree 🌸</span>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <p class="modal-desc">Anyone who opens this link will see your exact 3D tree with the same season, palette &amp; QR code.</p>
+    <div class="modal-url-row">
+      <input class="url-input" id="share-url-input" readonly/>
+      <button class="copy-btn" id="copy-btn">
+        <svg id="copy-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"/></svg>
+        <span id="copy-label">Copy</span>
       </button>
     </div>
   </div>
+</div>
 
-  <!-- Bottom Interactive Bar (URL Input, Dynamic Save, Share, Download) -->
-  <footer class="fixed bottom-4 left-4 right-4 z-20 pointer-events-auto max-w-3xl mx-auto">
-    <div class="p-3 sm:p-4 rounded-2xl bg-stone-950/85 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col gap-2.5">
-      <!-- Target URL Input -->
-      <div class="flex items-center gap-2">
-        <div class="relative flex-1">
-          <input
-            id="target-url-input"
-            type="url"
-            value="https://icqr.com/"
-            placeholder="Enter destination URL (e.g. https://yourdomain.com)"
-            class="w-full pl-3 pr-20 py-2 rounded-xl bg-stone-900/90 border border-white/15 text-xs sm:text-sm text-white placeholder-stone-500 focus:outline-none focus:border-emerald-500 transition font-mono"
-          />
-          <button id="btn-apply-url" class="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold text-xs rounded-lg transition">
-            Update
-          </button>
-        </div>
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════
+// INLINE qrcode-generator library (MIT, Kazuhiko Arase)
+// ═══════════════════════════════════════════════════════════════════════════════
+var qrcode=function(){var a=function(){var b=function(a,b){this.typeNumber=a;this.errorCorrectionLevel=b;this.modules=null;this.moduleCount=0;this.dataCache=null;this.dataList=[]};b.prototype={addData:function(a,b){var c=w[b||"Byte"];this.dataList.push(new c(a));this.dataCache=null},isDark:function(a,b){if(a<0||this.moduleCount<=a||b<0||this.moduleCount<=b)throw new Error(a+","+b);return this.modules[a][b]},getModuleCount:function(){return this.moduleCount},make:function(){if(this.typeNumber<1){var a=1;for(a=1;a<40;a++){var c=f[this.errorCorrectionLevel][a-1];var d=0;var e=b.getRSBlocks(a,this.errorCorrectionLevel);for(var i=0;i<e.length;i++){d+=e[i].dataCount}for(var j=0;j<this.dataList.length;j++){var g=this.dataList[j];d-=g.getLengthInBits(a)>0?Math.ceil(g.getDCCount(a)*8/g.getMaxDCCount(a)):0}if(d>=0)break}this.typeNumber=a}this.makeImpl(!1,this.getBestMaskPattern())},makeImpl:function(a,c){this.moduleCount=this.typeNumber*4+17;this.modules=function(a){var b=new Array(a);for(var c=0;c<a;c++){b[c]=new Array(a);for(var d=0;d<a;d++)b[c][d]=null}return b}(this.moduleCount);this.setupPositionProbePattern(0,0);this.setupPositionProbePattern(this.moduleCount-7,0);this.setupPositionProbePattern(0,this.moduleCount-7);this.setupPositionAdjustPattern();this.setupTimingPattern();this.setupTypeInfo(a,c);if(this.typeNumber>=7)this.setupTypeNumber(a);if(this.dataCache==null)this.dataCache=b.createData(this.typeNumber,this.errorCorrectionLevel,this.dataList);this.mapData(this.dataCache,c)},setupPositionProbePattern:function(a,b){for(var c=-1;c<=7;c++){if(a+c<=-1||this.moduleCount<=a+c)continue;for(var d=-1;d<=7;d++){if(b+d<=-1||this.moduleCount<=b+d)continue;if(0<=c&&c<=6&&d==0||0<=c&&c<=6&&d==6||0<=d&&d<=6&&c==0||0<=d&&d<=6&&c==6||2<=c&&c<=4&&2<=d&&d<=4){this.modules[a+c][b+d]=!0}else{this.modules[a+c][b+d]=!1}}}},getBestMaskPattern:function(){var a=0,b=0;for(var c=0;c<8;c++){this.makeImpl(!0,c);var d=k.getLostPoint(this);if(c==0||a>d){a=d;b=c}}return b},setupTimingPattern:function(){for(var a=8;a<this.moduleCount-8;a++){if(this.modules[a][6]!=null)continue;this.modules[a][6]=(a%2==0)}for(var b=8;b<this.moduleCount-8;b++){if(this.modules[6][b]!=null)continue;this.modules[6][b]=(b%2==0)}},setupPositionAdjustPattern:function(){var a=g.getPatternPosition(this.typeNumber);for(var b=0;b<a.length;b++){for(var c=0;c<a.length;c++){var d=a[b],e=a[c];if(this.modules[d][e]!=null)continue;for(var f=-2;f<=2;f++){for(var h=-2;h<=2;h++){if(f==-2||f==2||h==-2||h==2||f==0&&h==0){this.modules[d+f][e+h]=!0}else{this.modules[d+f][e+h]=!1}}}}}},setupTypeNumber:function(a){var b=k.getBCHTypeNumber(this.typeNumber),c;for(c=0;c<18;c++){var d=(!a&&(b>>c&1)==1);this.modules[Math.floor(c/3)][c%3+this.moduleCount-8-3]=d}for(c=0;c<18;c++){var d=(!a&&(b>>c&1)==1);this.modules[c%3+this.moduleCount-8-3][Math.floor(c/3)]=d}},setupTypeInfo:function(a,b){var c=this.errorCorrectionLevel<<3|b,d=k.getBCHTypeInfo(c);for(var e=0;e<15;e++){var h=(!a&&(d>>e&1)==1);if(e<6){this.modules[e][8]=h}else if(e<8){this.modules[e+1][8]=h}else{this.modules[this.moduleCount-15+e][8]=h}}for(var e=0;e<15;e++){var h=(!a&&(d>>e&1)==1);if(e<8){this.modules[8][this.moduleCount-e-1]=h}else if(e<9){this.modules[8][15-e-1+1]=h}else{this.modules[8][15-e-1]=h}}this.modules[this.moduleCount-8][8]=(!a)},mapData:function(a,b){var c=-1,d=this.moduleCount-1,e=7,h=0;for(var f=this.moduleCount-1;f>0;f-=2){if(f==6)f--;for(;0<=d&&d<this.moduleCount;d+=c){for(var g=0;g<2;g++){if(this.modules[d][f-g]==null){var i=!1;if(h<a.length){i=(a[h]>>>e&1)==1}if(k.getMask(b,d,f-g)){i=!i}this.modules[d][f-g]=i;e--;if(e==-1){h++;e=7}}}}c=-c;if(c==-1){d=this.moduleCount-1}else{d=0}}}};b.PAD0=0xEC;b.PAD1=0x11;b.createData=function(a,c,d){var e=b.getRSBlocks(a,c),f=new m;for(var g=0;g<d.length;g++){var h=d[g];f.put(h.getMode(),4);f.put(h.getLength(a),h.getLengthInBits(a));h.write(f)}var i=0;for(var g=0;g<e.length;g++)i+=e[g].dataCount;if(f.getLengthInBits()>i*8)throw new Error("code length overflow. ("+f.getLengthInBits()+">"+i*8+")");if(f.getLengthInBits()+4<=i*8)f.put(0,4);while(f.getLengthInBits()%8!=0)f.putBit(!1);for(;;){if(f.getLengthInBits()>=i*8)break;f.put(b.PAD0,8);if(f.getLengthInBits()>=i*8)break;f.put(b.PAD1,8)}return b.createBytes(f,e)};b.createBytes=function(a,b){var c=0,d=0,e=0,f=new Array(b.length),g=new Array(b.length);for(var h=0;h<b.length;h++){var i=b[h].dataCount,j=b[h].totalCount-i;d=Math.max(d,i);e=Math.max(e,j);f[h]=new Array(i);for(var k=0;k<f[h].length;k++)f[h][k]=0xFF&a.getBuffer()[c++];g[h]=new Array(j);for(var k=0;k<g[h].length;k++)g[h][k]=0}var l=0,m=new Array(b.length);for(var h=0;h<b.length;h++)m[h]=0;var n=new Array;for(var k=0;k<d;k++){for(var h=0;h<b.length;h++){if(m[h]<f[h].length)n.push(f[h][m[h]++])}}for(var k=0;k<e;k++){for(var h=0;h<b.length;h++){if(m[h]<g[h].length)n.push(g[h][m[h]++])}}return n};b.getRSBlocks=function(a,b){var c=p(a,b);var d=c.length/3,e=[];for(var f=0;f<d;f++){var g=c[f*3+0],h=c[f*3+1],i=c[f*3+2];for(var j=0;j<g;j++)e.push(new q(h,i))}return e};return b}();var c={MODE_NUMBER:1<<0,MODE_ALPHA_NUM:1<<1,MODE_8BIT_BYTE:1<<2,MODE_KANJI:1<<3};var d={L:1,M:0,Q:3,H:2};var e=function(){var a={};a[d.L]=[0x77c4,0x72f3,0x7daa,0x789d,0x662f,0x6318,0x6c41,0x6976,0x5942,0x5e75,0x512c,0x541b,0x4b08,0x4e3f,0x4166,0x4451,0x3b68,0x3e5f,0x3106,0x3431,0x2b6b,0x2e5c,0x2105,0x2432,0x1b20,0x1e17,0x114e,0x1479,0x0b4b,0x0e7c,0x0125,0x0412,0xfa60,0xff57,0xf00e,0xf539,0xea2b,0xef1c,0xe045,0xe572];a[d.M]=[0x5412,0x5125,0x5e7c,0x5b4b,0x45f9,0x40ce,0x4f97,0x4aa0,0x77c4,0x72f3,0x7daa,0x789d,0x662f,0x6318,0x6c41,0x6976,0x1689,0x13be,0x1ce7,0x19d0,0x0762,0x0255,0x0d0c,0x083b,0x355f,0x3068,0x3f31,0x3a06,0x24b4,0x2183,0x2eda,0x2bed];a[d.Q]=[0x159f,0x10a8,0x1ff1,0x1ac6,0x0474,0x0143,0x0e1a,0x0b2d,0x36e8,0x33df,0x3c86,0x39b1,0x2703,0x2234,0x2d6d,0x285a,0x7891,0x7da6,0x72ff,0x77c8,0x697a,0x6c4d,0x6314,0x6623,0x5be7,0x5ed0,0x5189,0x54be,0x4a0c,0x4f3b,0x4062,0x4555];a[d.H]=[0x1689,0x13be,0x1ce7,0x19d0,0x0762,0x0255,0x0d0c,0x083b,0x355f,0x3068,0x3f31,0x3a06,0x24b4,0x2183,0x2eda,0x2bed,0x40c4,0x45f3,0x4aaa,0x4f9d,0x512f,0x5418,0x5b41,0x5e76,0x6342,0x6675,0x692c,0x6c1b,0x72a9,0x779e,0x78c7,0x7df0];return a}();function f(a,b){return e[a][b-1]}var g=function(){var a=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,132],[6,34,60,86,112,136],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]];return{getPatternPosition:function(b){return a[b-1]}}}();var k=function(){return{getBCHTypeInfo:function(a){var b=a<<10;while(h(b)-h(1335)>=0)b^=1335<<h(b)-h(1335);return(a<<10|b)^21522},getBCHTypeNumber:function(a){var b=a<<12;while(h(b)-h(7973)>=0)b^=7973<<h(b)-h(7973);return a<<12|b},getPatternPosition:function(a){return g.getPatternPosition(a)},getMask:function(a,b,c){switch(a){case 0:return(b+c)%2==0;case 1:return b%2==0;case 2:return c%3==0;case 3:return(b+c)%3==0;case 4:return(Math.floor(b/2)+Math.floor(c/3))%2==0;case 5:return b*c%2+b*c%3==0;case 6:return(b*c%2+b*c%3)%2==0;case 7:return(b+c+b*c%3)%2==0}throw new Error("bad maskPattern:"+a)},getLostPoint:function(a){var b=a.getModuleCount(),c=0,d,e,f,g;for(d=0;d<b;d++){for(e=0;e<b;e++){var h=0,i=a.isDark(d,e);for(f=-1;f<=1;f++){if(d+f<0||b<=d+f)continue;for(g=-1;g<=1;g++){if(e+g<0||b<=e+g)continue;if(f==0&&g==0)continue;if(i==a.isDark(d+f,e+g))h++}}if(h>5)c+=(3+h-5)}}for(d=0;d<b-1;d++){for(e=0;e<b-1;e++){var j=0;if(a.isDark(d,e))j++;if(a.isDark(d+1,e))j++;if(a.isDark(d,e+1))j++;if(a.isDark(d+1,e+1))j++;if(j==0||j==4)c+=3}}for(d=0;d<b;d++){for(e=0;e<b-6;e++){if(a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6))c+=40}}for(e=0;e<b;e++){for(d=0;d<b-6;d++){if(a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e))c+=40}}var k=0;for(d=0;d<b;d++){for(e=0;e<b;e++){if(a.isDark(d,e))k++}}var l=Math.abs(100*k/b/b-50)/5;c+=l*10;return c},getRSBlocks:function(a,b){return b.getRSBlocks(a,b)},getBCHTypeInfo:function(a){var b=a<<10;while(h(b)-h(1335)>=0)b^=1335<<h(b)-h(1335);return(a<<10|b)^21522}}}();function h(a){var b=0;while(a!=0){b++;a>>>=1}return b}var m=function(){var a=[],b=0;return{getBuffer:function(){return a},getAt:function(b){return(a[Math.floor(b/8)]>>7-b%8&1)==1},put:function(a,c){for(var d=0;d<c;d++)this.putBit((a>>>(c-d-1)&1)==1)},getLengthInBits:function(){return b},putBit:function(c){var d=Math.floor(b/8);if(a.length<=d)a.push(0);if(c)a[d]|=0x80>>b%8;b++}}}();var n=function(a,b){var c=a,d=b,e=[];var f=function(){e=[];var a=c+d;for(var b=0;b<a;b++)e.push(0);var f=new Array(d);for(var b=0;b<f.length;b++)f[b]=1;for(var c=e.length-1;c>=0;c--){var g=e[c];e[c]=0;for(var h=0;h<f.length;h++)e[c+h]^=g*f[h]}var i=0;while(e[i]==0)i++;e=e.slice(i)};f();return{getLength:function(){return e.length},get:function(a){return e[a]}}};var o=function(){var a=[0];var b=function(a){while(a[0]==0&&a.length>1)a.shift();return a};var c=function(c,d){var e=[],f=Math.max(c.length,d.length);for(var g=0;g<f+1;g++)e.push(0);for(var g=0;g<c.length;g++)for(var h=0;h<d.length;h++)e[g+h]^=a[c[g]]*(a[d[h]]>-1?a[d[h]]:0)>-1?a[a[c[g]]+a[d[h]]]:-1;return b(e)};var d=[];for(var e=0;e<256;e++)d.push(0);var f=1;for(var e=0;e<255;e++){d[e]=f;a[f]=e;f<<=1;if(255<f)f^=0x11D}return{glog:function(b){if(b<1)throw new Error("glog("+b+")");return a[b]},gexp:function(a){while(a<0)a+=255;while(255<a)a-=255;return d[a]},multiply:function(a,b){if(a==0||b==0)return 0;return d[(o.glog(a)+o.glog(b))%255]},mod:function(a,d){while(a.length-d.length>=0){var e=a[0];for(var f=0;f<d.length;f++){a[0+f]^=o.multiply(d[f],e)}a.shift()}return a}}}();function p(a,b){var c;switch(b){case d.L:c=[1,26,19,1,26,16,1,26,13,1,36,22,1,46,28,1,60,36,2,32,16,2,42,24,1,52,30,2,46,22,3,37,18,2,38,20,4,32,14,4,43,20,2,33,14,2,34,16,4,33,14,4,33,14,2,32,13,4,31,13,4,32,14,4,33,14,8,34,15,6,30,12,8,33,13,4,32,13,8,30,12,7,32,13,6,33,13,8,33,13,2,33,14,8,30,12,7,32,13,6,33,13,10,34,15,2,33,13,8,33,14,8,30,12,10,33,14,8,30,12,10,33,13,10,34,13,10,33,13,10,34,13,8,33,13,10,33,13,10,34,13,10,34,13,10,33,13,10,34,13];break;case d.M:c=[1,26,16,1,26,19,1,44,28,2,32,16,2,32,24,4,32,16,4,38,18,2,30,22,2,33,22,4,32,20,2,32,19,4,32,16,4,33,16,2,32,14,4,30,13,4,30,13,4,30,13,8,32,13,8,30,13,8,30,13,10,30,13,8,30,13,10,30,13,10,30,13,10,30,13,8,30,13,10,30,13,10,30,13,10,30,13,10,30,13,10,30,13,10,30,13,10,30,13,10,30,13,10,30,13,10,30,13,10,30,13,10,30,13,10,30,13,10,30,13];break;case d.Q:c=[1,26,13,1,26,22,2,22,16,2,32,24,2,33,22,4,22,13,2,32,14,2,33,22,2,32,22,4,32,16,4,32,16,4,32,16,4,33,16,8,32,13,8,30,13,8,30,13,8,32,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13,8,30,13];break;case d.H:c=[1,26,9,1,26,16,2,22,13,4,16,9,4,22,11,4,22,12,4,26,12,4,26,14,5,24,12,5,28,13,5,28,14,8,28,13,10,22,11,10,28,12,8,24,12,10,28,12,10,24,12,8,24,12,10,30,12,8,24,12,10,24,12,8,24,12,10,30,12,10,24,12,10,24,12,10,24,12,10,30,13,10,24,12,10,24,12,10,24,12,10,30,12,10,24,12,10,24,12,10,30,12,10,24,13,10,24,13,10,24,13,10,30,13,10,24,13,10,24,13,10,24,13,10,30,13,10,24,13,10,24,13,10,24,13];break;default:throw new Error("bad rs block count at "+a+","+b)}var e=Math.floor(a/5)*6+(a>5?a>26?a>40?-1:0:a>8?1:2:3);if(e<0)throw new Error("bad rs block count");var f=[],g=c[e*3+1],h=c[e*3+2];for(var i=0;i<c[e*3+0];i++)f.push(new q(g,h));if(c.length>e*3+3){var j=c[(e+1)*3+1],k=c[(e+1)*3+2];for(var i=0;i<c[(e+1)*3+0];i++)f.push(new q(j,k))}return f}var q=function(a,b){return{totalCount:a,dataCount:b}};var r=function(){var b=[],c=0;return{write:function(c,d){for(var e=0;e<d;e++){b.push(c>>>(d-e-1)&1)}},getLengthInBits:function(){return c},flush:function(){},getBuffer:function(){return b},getAt:function(a){return b[a]},put:function(a,c){for(var d=0;d<c;d++)this.write((a>>>(c-d-1))&1,1)},putBit:function(a){b.push(a?1:0);c++},getLengthInBits:function(){return b.length}}}();var s=function(){var a=[];var b=0;return{getBuffer:function(){return a},getLengthInBits:function(){return b},put:function(a,c){for(var d=0;d<c;d++)this.putBit((a>>>(c-d-1)&1)==1)},putBit:function(c){var d=Math.floor(b/8);if(a.length<=d)a.push(0);if(c)a[d]|=0x80>>b%8;b++}}}();var w={Numeric:function(a){var b=a;var c={getMode:function(){return c.MODE_NUMBER},getLength:function(a){return b.length},getDCCount:function(a){return Math.ceil(b.length*10/3)},getMaxDCCount:function(a){return Math.floor(b.length*10/3)+1},getLengthInBits:function(a){if(1<=a&&a<10)return 10;else if(a<27)return 12;else if(a<40)return 14;return 0},write:function(a){var c=b;while(c.length>=3){a.put(parseInt(c.substring(0,3),10),10);c=c.substring(3)}if(c.length==2){a.put(parseInt(c,10),7)}else if(c.length==1){a.put(parseInt(c,10),4)}}};c.MODE_NUMBER=1;return c},AlphaNum:function(a){var b=a,c="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";var d={getMode:function(){return 2},getLength:function(a){return b.length},getDCCount:function(a){return Math.ceil(b.length*11/2)},getMaxDCCount:function(a){return Math.floor(b.length*11/2)+1},getLengthInBits:function(a){if(1<=a&&a<10)return 9;else if(a<27)return 11;else if(a<40)return 13;return 0},write:function(a){var d=b;while(d.length>=2){var e=c.indexOf(d.charAt(0));var f=c.indexOf(d.charAt(1));a.put(e*45+f,11);d=d.substring(2)}if(d.length==1){a.put(c.indexOf(d.charAt(0)),6)}}};return d},Byte:function(a){var b=[];for(var c=0;c<a.length;c++){var d=a.charCodeAt(c);if(d>0x0080){if(d>0x00800){if((d&0xF800)==0xD800){if(c+1>=a.length)throw new Error("Error: Lone surrogate half in source: "+a);var e=a.charCodeAt(c+1);if((e&0xFC00)!=0xDC00)throw new Error("Error: Second char code 0x"+e.toString(16)+" at index "+(c+1)+" in source \""+a+"\" is not a trailing surrogate");b.push(0xF0|(d&0x3C0)>>6>>4);b.push(0x80|(d&0x3C)>>2<<2|(e&0x300)>>8);b.push(0x80|(e&0xFC)>>2);b.push(0x80|e&0x3F);c++}else{b.push(0xE0|(d&0xF000)>>12);b.push(0x80|(d&0xFC0)>>6);b.push(0x80|d&0x3F)}}else{b.push(0xC0|(d&0x7C0)>>6);b.push(0x80|d&0x3F)}}else{b.push(d)}}var c={getMode:function(){return 4},getLength:function(a){return b.length},getDCCount:function(a){return b.length},getMaxDCCount:function(a){return b.length},getLengthInBits:function(a){if(a<10)return 8;else if(a<27)return 16;return 16},write:function(a){for(var c=0;c<b.length;c++)a.put(b[c],8)}};return c},Kanji:function(a){var b=[];for(var c=0;c<a.length;c++){var d=0xFF&a.charCodeAt(c)<<8|0xFF&a.charCodeAt(c+1);if(d>=0x8140&&d<=0x9FFC)d-=0x8140;else if(d>=0xE040&&d<=0xEBBF)d-=0xC140;b.push((0xFF&d>>8)*0xC0+(0xFF&d));c++}var c={getMode:function(){return 8},getLength:function(a){return b.length},getDCCount:function(a){return b.length*2},getMaxDCCount:function(a){return b.length*2},getLengthInBits:function(a){return 13},write:function(a){for(var c=0;c<b.length;c++)a.put(b[c],13)}};return c}};a.stringToBytes=a.stringToBytesFuncs["UTF-8"];return a}();
 
-        <!-- Share URL Button -->
-        <button id="btn-share" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-medium flex items-center gap-1.5 transition whitespace-nowrap" title="Copy 3D Magic Link">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 1 1 0-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 1 0 5.367-2.684 3 3 0 0 0-5.367 2.684zm0 9.316a3 3 0 1 0 5.368 2.684 3 3 0 0 0-5.368-2.684z" />
-          </svg>
-          <span class="hidden sm:inline">Share</span>
-        </button>
+// ═══════════════════════════════════════════════════════════════════════════════
+// Three.js r128 from CDN — loaded async, then app starts
+// ═══════════════════════════════════════════════════════════════════════════════
+(function(){
+  // State
+  var state = {
+    url: "https://cruseqr.com/",
+    season: 0,
+    palette: 0,
+    seed: 42,
+    scanMode: false,
+    muted: true
+  };
 
-        <!-- Save to InstaBox Backend -->
-        <button id="btn-save-backend" class="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-lg shadow-emerald-900/40 whitespace-nowrap" title="Save as dynamic QR on InstaBox Backend">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          <span class="hidden sm:inline">Save to Backend</span>
-        </button>
+  // Parse URL ?q= param
+  var params = new URLSearchParams(location.search);
+  var qRaw = params.get("q");
+  if (qRaw) {
+    try {
+      var d = atob(qRaw);
+      state.season = Math.min(3, Math.max(0, parseInt(d[0]) || 0));
+      state.palette = Math.min(5, Math.max(0, parseInt(d[1]) || 0));
+      state.url = d.slice(2) || "https://cruseqr.com/";
+    } catch(e) {}
+  }
 
-        <!-- Snapshot Download -->
-        <button id="btn-download" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs transition" title="Download Snapshot (PNG)">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-          </svg>
-        </button>
-      </div>
+  var SEASONS = [
+    { name:"Spring", bg:"#f5ede2", bgHex:0xf5ede2, ground:0xede0d4, block:0x2b1a13, trunk:0x5c3d2e, leaf1:0xffb7c5, leaf2:0xffc0cb, petal:0xffb7c5, fog:0xf5ede2 },
+    { name:"Summer", bg:"#e8f5ec", bgHex:0xe8f5ec, ground:0xd8ead8, block:0x0f2a1a, trunk:0x3b2d20, leaf1:0x2d8a50, leaf2:0x57c97a, petal:0x7dd49a, fog:0xe8f5ec },
+    { name:"Autumn", bg:"#fbf0e2", bgHex:0xfbf0e2, ground:0xf0e0c8, block:0x3a1508, trunk:0x52301a, leaf1:0xd9531e, leaf2:0xf0a830, petal:0xe07828, fog:0xfbf0e2 },
+    { name:"Winter", bg:"#e8f0f8", bgHex:0xe8f0f8, ground:0xd8e4f0, block:0x162638, trunk:0x344558, leaf1:0xc8def0, leaf2:0xffffff, petal:0xd8eaf8, fog:0xe8f0f8 }
+  ];
+  var PALETTES = [
+    { name:"Sakura",  hex:0xffb7c5, color:"#ffb7c5" },
+    { name:"Rose",    hex:0xf43f7e, color:"#f43f7e" },
+    { name:"Emerald", hex:0x10b981, color:"#10b981" },
+    { name:"Amber",   hex:0xf59e0b, color:"#f59e0b" },
+    { name:"Sky",     hex:0x38bdf8, color:"#38bdf8" },
+    { name:"Violet",  hex:0x8b5cf6, color:"#8b5cf6" }
+  ];
 
-      <!-- Quick Helpers & Notification toast -->
-      <div class="flex items-center justify-between text-[11px] text-stone-400 px-1">
-        <div class="flex items-center gap-3">
-          <span>🖱️ Left Click + Drag: Orbit 3D</span>
-          <span class="hidden sm:inline">📜 Scroll: Zoom</span>
-          <span class="hidden md:inline">🖱️ Right Click: Pan</span>
-        </div>
-        <div id="toast" class="text-emerald-400 font-medium transition-opacity duration-300 opacity-0">Link copied!</div>
-      </div>
-    </div>
-  </footer>
+  // ── Render swatches ──────────────────────────────────────────────────────────
+  var swatchEl = document.getElementById("swatches");
+  PALETTES.forEach(function(p, i){
+    var b = document.createElement("div");
+    b.className = "swatch" + (i === state.palette ? " active" : "");
+    b.style.background = p.color;
+    b.title = p.name;
+    b.addEventListener("click", function(){
+      state.palette = i;
+      document.querySelectorAll(".swatch").forEach(function(s, j){ s.classList.toggle("active", j===i); });
+      rebuildScene();
+    });
+    swatchEl.appendChild(b);
+  });
 
-  <!-- Modal for Backend Saved Dynamic QR -->
-  <div id="save-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-stone-900 border border-white/20 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
-      <button id="modal-close" class="absolute top-4 right-4 text-stone-400 hover:text-white text-lg">&times;</button>
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-xl">
-          🚀
-        </div>
-        <div>
-          <h3 class="text-base font-bold text-white">Saved to InstaBox Backend</h3>
-          <p class="text-xs text-stone-400">Dynamic QR with live redirection & telemetry</p>
-        </div>
-      </div>
+  // ── Init UI state ────────────────────────────────────────────────────────────
+  document.getElementById("url-input").value = state.url;
+  document.querySelectorAll(".season-btn").forEach(function(b){
+    var i = parseInt(b.dataset.i);
+    b.classList.toggle("active", i === state.season);
+  });
+  document.querySelectorAll(".season-btn").forEach(function(b){
+    b.addEventListener("click", function(){
+      state.season = parseInt(b.dataset.i);
+      document.querySelectorAll(".season-btn").forEach(function(x,j){ x.classList.toggle("active", j===state.season); });
+      rebuildScene();
+    });
+  });
+  document.getElementById("btn-gen").addEventListener("click", function(){
+    var v = document.getElementById("url-input").value.trim();
+    state.url = v.startsWith("http") ? v : "https://"+v;
+    rebuildScene();
+  });
+  document.getElementById("url-input").addEventListener("keydown", function(e){
+    if (e.key === "Enter") document.getElementById("btn-gen").click();
+  });
+  document.getElementById("btn-reseed").addEventListener("click", function(){
+    state.seed = Math.floor(Math.random() * 999999);
+    rebuildScene();
+  });
+  document.getElementById("btn-scan").addEventListener("click", function(){
+    state.scanMode = !state.scanMode;
+    document.getElementById("btn-scan").classList.toggle("active", state.scanMode);
+    document.getElementById("scan-label").textContent = state.scanMode ? "3D View" : "Scan QR";
+    if (state.scanMode){ cam.tPitch = 0.001; cam.tDist = 38; }
+    else { cam.tPitch = 0.78; cam.tDist = 46; }
+  });
+  document.getElementById("btn-share").addEventListener("click", function(){
+    document.getElementById("share-url-input").value = getShareUrl();
+    document.getElementById("modal-bg").classList.add("open");
+  });
+  document.getElementById("modal-bg").addEventListener("click", function(e){ if(e.target===this) this.classList.remove("open"); });
+  document.getElementById("modal-close").addEventListener("click", function(){ document.getElementById("modal-bg").classList.remove("open"); });
+  document.getElementById("copy-btn").addEventListener("click", function(){
+    navigator.clipboard.writeText(document.getElementById("share-url-input").value).then(function(){
+      document.getElementById("copy-label").textContent = "Copied!";
+      setTimeout(function(){ document.getElementById("copy-label").textContent = "Copy"; }, 2000);
+    });
+  });
+  document.getElementById("btn-download").addEventListener("click", function(){
+    if(!renderer) return;
+    renderer.render(scene, camera);
+    var a = document.createElement("a");
+    a.href = renderer.domElement.toDataURL("image/png");
+    a.download = "cruseqr-magic-tree-" + SEASONS[state.season].name.toLowerCase() + ".png";
+    a.click();
+  });
 
-      <div class="space-y-3 bg-stone-950 p-4 rounded-xl border border-white/10 text-xs">
-        <div>
-          <span class="text-stone-400">Target URL:</span>
-          <div id="modal-target-url" class="font-mono text-white truncate mt-0.5"></div>
-        </div>
-        <div>
-          <span class="text-stone-400">InstaBox Short Redirect URL:</span>
-          <div class="flex items-center gap-2 mt-0.5">
-            <input id="modal-short-url" readonly class="w-full bg-stone-900 border border-white/15 px-2.5 py-1.5 rounded-lg text-emerald-400 font-mono text-xs" />
-            <button id="modal-copy-btn" class="px-2.5 py-1.5 bg-emerald-500 text-stone-950 font-bold rounded-lg text-xs hover:bg-emerald-400">Copy</button>
-          </div>
-        </div>
-        <div>
-          <span class="text-stone-400">Backend Server:</span>
-          <div class="font-mono text-stone-300">https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech</div>
-        </div>
-      </div>
-
-      <div class="mt-4 flex justify-end">
-        <button id="modal-done-btn" class="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-white rounded-xl text-xs font-semibold transition">
-          Done
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // ==========================================
-    // BACKEND CONFIGURATION
-    // ==========================================
-    const BACKEND_URL = "https://3000-agq2i7yzuidu26jymgrfnit3ea.instabox.tech";
-
-    async function checkBackendHealth() {
-      const dot = document.getElementById("backend-dot");
-      const text = document.getElementById("backend-text");
+  var audioCtx = null;
+  document.getElementById("btn-sound").addEventListener("click", function(){
+    if (state.muted) {
       try {
-        const res = await fetch(BACKEND_URL + "/api/health", { method: "GET", mode: "cors" });
-        if (res.ok) {
-          dot.className = "w-2 h-2 rounded-full bg-emerald-400";
-          text.textContent = "InstaBox Backend Online";
-          text.className = "font-mono text-[11px] text-emerald-300";
-        } else {
-          dot.className = "w-2 h-2 rounded-full bg-amber-400";
-          text.textContent = "Backend responding (" + res.status + ")";
-        }
-      } catch (err) {
-        dot.className = "w-2 h-2 rounded-full bg-emerald-500";
-        text.textContent = "InstaBox Node Live";
-      }
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        var buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 3, audioCtx.sampleRate);
+        var data = buf.getChannelData(0);
+        for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+        var src = audioCtx.createBufferSource(); src.buffer = buf; src.loop = true;
+        var f = audioCtx.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 400; f.Q.value = 3;
+        var g = audioCtx.createGain(); g.gain.value = 0.06;
+        src.connect(f); f.connect(g); g.connect(audioCtx.destination); src.start();
+        state.muted = false;
+        document.getElementById("btn-sound").style.color = "#10b981";
+      } catch(e) {}
+    } else {
+      if (audioCtx) audioCtx.suspend();
+      state.muted = true;
+      document.getElementById("btn-sound").style.color = "";
     }
-    checkBackendHealth();
-    setInterval(checkBackendHealth, 30000);
+  });
 
-    // ==========================================
-    // SEASONS & PALETTES CONFIGURATION
-    // ==========================================
-    const SEASONS = [
-      {
-        id: "spring",
-        name: "Spring",
-        icon: "🌸",
-        skyColor: 0xf5eee6,
-        groundColor: 0xede4d8,
-        blockColor: 0x2e1d16,
-        trunkColor: 0x5a3e36,
-        leavesColors: [0xffb7c5, 0xff9ebb, 0xffc0cb, 0xffe4e1],
-        petalColor: 0xffb7c5
-      },
-      {
-        id: "summer",
-        name: "Summer",
-        icon: "🍃",
-        skyColor: 0xedf5ee,
-        groundColor: 0xdeeade,
-        blockColor: 0x14281b,
-        trunkColor: 0x4a3b32,
-        leavesColors: [0x2e8b57, 0x3cb371, 0x66cdaa, 0x20b2aa],
-        petalColor: 0x88d49e
-      },
-      {
-        id: "autumn",
-        name: "Autumn",
-        icon: "🍂",
-        skyColor: 0xfbf2e4,
-        groundColor: 0xf2e1cc,
-        blockColor: 0x361608,
-        trunkColor: 0x54331d,
-        leavesColors: [0xd9531e, 0xeb8223, 0xf2a93b, 0xa63d11],
-        petalColor: 0xeb8223
-      },
-      {
-        id: "winter",
-        name: "Winter",
-        icon: "❄️",
-        skyColor: 0xedf3f8,
-        groundColor: 0xe0eaf2,
-        blockColor: 0x172230,
-        trunkColor: 0x3d4451,
-        leavesColors: [0xcad9e8, 0xe0e8f0, 0xb8cce0, 0xffffff],
-        petalColor: 0xe0e8f0
-      }
-    ];
+  function getShareUrl() {
+    try { return location.origin + location.pathname + "?q=" + btoa(state.season + "" + state.palette + state.url); } catch(e){ return location.href; }
+  }
 
-    const PALETTES = [
-      { id: "natural", name: "Natural", hexes: ["#5a3e36", "#ffb7c5", "#f0e9dc"] },
-      { id: "vibrant", name: "Vibrant", hexes: ["#4a3b32", "#ff4081", "#ffffff"] },
-      { id: "pastel",  name: "Pastel",  hexes: ["#7a6358", "#b5ead7", "#ffdac1"] },
-      { id: "dark",    name: "Obsidian",hexes: ["#1f1f1f", "#10b981", "#121212"] }
-    ];
+  // ── Load Three.js from CDN ──────────────────────────────────────────────────
+  var script = document.createElement("script");
+  script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+  script.onload = initThree;
+  script.onerror = function(){ document.body.innerHTML = '<div style="color:red;padding:40px;font-size:20px">Failed to load Three.js. Please check your internet connection.</div>'; };
+  document.head.appendChild(script);
 
-    // ==========================================
-    // ICQR QUERY PARAM PARSER / ENCODER
-    // e.g. ?q=MDBodHRwczovL2ljcXIuY29tLw -> season 0, palette 0, url https://icqr.com/
-    // ==========================================
-    function parseQueryParam(qParam) {
-      if (!qParam) return { url: "https://icqr.com/", season: 0, palette: 0 };
-      try {
-        const decoded = atob(qParam);
-        const season = parseInt(decoded.charAt(0), 10) || 0;
-        const palette = parseInt(decoded.charAt(1), 10) || 0;
-        const url = decoded.substring(2) || "https://icqr.com/";
-        return {
-          url: url,
-          season: Math.min(3, Math.max(0, season)),
-          palette: Math.min(3, Math.max(0, palette))
-        };
-      } catch (e) {
-        return { url: "https://icqr.com/", season: 0, palette: 0 };
-      }
-    }
+  // ── Three.js globals ─────────────────────────────────────────────────────────
+  var scene, camera, renderer, animId;
+  var qrGroup, treeGroup, petalMesh, groundMesh;
+  var clock;
+  var cam = { pitch:0.78, yaw:0.6, dist:46, tPitch:0.78, tYaw:0.6, tDist:46, dragging:false, px:0, py:0 };
 
-    function encodeQueryParam(url, season, palette) {
-      try {
-        return btoa(String(season) + String(palette) + url);
-      } catch (e) {
-        return "";
-      }
-    }
+  // Seeded RNG
+  function makeRng(seed) {
+    var s = seed;
+    return function(){ s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialConfig = parseQueryParam(urlParams.get("q"));
+  function initThree() {
+    var THREE = window.THREE;
+    var container = document.getElementById("canvas-container");
 
-    let currentUrl = initialConfig.url;
-    let currentSeasonIndex = initialConfig.season;
-    let currentPaletteIndex = initialConfig.palette;
-    let currentSeed = 101;
-    let isScanMode = false;
-    let audioPlaying = false;
-    let audioCtx = null;
-    let audioGain = null;
-
-    document.getElementById("target-url-input").value = currentUrl;
-
-    // ==========================================
-    // PROCEDURAL AUDIO SYNTHESIZER
-    // ==========================================
-    function toggleAudio() {
-      const icon = document.getElementById("audio-icon");
-      const label = document.getElementById("audio-label");
-      if (!audioPlaying) {
-        try {
-          if (!audioCtx) {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioCtx = new AudioContext();
-          }
-          if (audioCtx.state === "suspended") {
-            audioCtx.resume();
-          }
-          const bufferSize = audioCtx.sampleRate * 2;
-          const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-          const output = noiseBuffer.getChannelData(0);
-          for (let i = 0; i < bufferSize; i++) {
-            output[i] = Math.random() * 2 - 1;
-          }
-          const whiteNoise = audioCtx.createBufferSource();
-          whiteNoise.buffer = noiseBuffer;
-          whiteNoise.loop = true;
-
-          const filter = audioCtx.createBiquadFilter();
-          filter.type = "bandpass";
-          filter.frequency.setValueAtTime(320, audioCtx.currentTime);
-          filter.Q.setValueAtTime(2.5, audioCtx.currentTime);
-
-          audioGain = audioCtx.createGain();
-          audioGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-
-          whiteNoise.connect(filter);
-          filter.connect(audioGain);
-          audioGain.connect(audioCtx.destination);
-          whiteNoise.start();
-
-          audioPlaying = true;
-          icon.textContent = "🔊";
-          label.textContent = "Sound On";
-        } catch (e) {
-          console.warn("Audio not allowed yet:", e);
-        }
-      } else {
-        if (audioCtx) audioCtx.suspend();
-        audioPlaying = false;
-        icon.textContent = "🔇";
-        label.textContent = "Sound Off";
-      }
-    }
-    document.getElementById("btn-audio").addEventListener("click", toggleAudio);
-
-    // ==========================================
-    // UI CONTROLS RENDERER
-    // ==========================================
-    function renderSeasonButtons() {
-      const container = document.getElementById("season-buttons");
-      container.innerHTML = "";
-      SEASONS.forEach((s, idx) => {
-        const btn = document.createElement("button");
-        const active = idx === currentSeasonIndex;
-        btn.className = "py-1.5 px-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition " + (
-          active
-            ? "bg-emerald-500 text-stone-950 shadow-md font-bold"
-            : "bg-white/5 hover:bg-white/10 text-stone-300"
-        );
-        btn.innerHTML = "<span>" + s.icon + "</span> <span>" + s.name + "</span>";
-        btn.onclick = () => {
-          currentSeasonIndex = idx;
-          renderSeasonButtons();
-          updateSceneTheme();
-          updateUrlBar();
-        };
-        container.appendChild(btn);
-      });
-    }
-
-    function renderPaletteButtons() {
-      const container = document.getElementById("palette-buttons");
-      container.innerHTML = "";
-      PALETTES.forEach((p, idx) => {
-        const btn = document.createElement("button");
-        const active = idx === currentPaletteIndex;
-        btn.className = "w-7 h-7 rounded-full flex items-center justify-center p-0.5 border transition " + (
-          active ? "border-emerald-400 scale-110 shadow-lg ring-2 ring-emerald-400/40" : "border-transparent opacity-70 hover:opacity-100"
-        );
-        btn.title = p.name;
-        btn.innerHTML = '<div class="w-full h-full rounded-full overflow-hidden flex transform -rotate-45">' +
-          '<span class="w-1/3 h-full" style="background:' + p.hexes[0] + '"></span>' +
-          '<span class="w-1/3 h-full" style="background:' + p.hexes[1] + '"></span>' +
-          '<span class="w-1/3 h-full" style="background:' + p.hexes[2] + '"></span>' +
-          '</div>';
-        btn.onclick = () => {
-          currentPaletteIndex = idx;
-          renderPaletteButtons();
-          updateSceneTheme();
-          updateUrlBar();
-        };
-        container.appendChild(btn);
-      });
-    }
-
-    renderSeasonButtons();
-    renderPaletteButtons();
-
-    // ==========================================
-    // THREE.JS 3D SCENE & ENGINE
-    // ==========================================
-    const container = document.getElementById("canvas-container");
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(24, 30, 38);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    // Renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
 
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.maxPolarAngle = Math.PI / 2 - 0.02;
-    controls.minDistance = 12;
-    controls.maxDistance = 85;
-    controls.target.set(0, 3.5, 0);
+    // Scene
+    scene = new THREE.Scene();
+    clock = new THREE.Clock();
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
-    scene.add(ambientLight);
+    // Camera
+    camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 500);
 
-    const sunLight = new THREE.DirectionalLight(0xfffaea, 1.35);
-    sunLight.position.set(25, 45, 25);
-    sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
-    sunLight.shadow.camera.near = 0.5;
-    sunLight.shadow.camera.far = 150;
-    sunLight.shadow.camera.left = -25;
-    sunLight.shadow.camera.right = 25;
-    sunLight.shadow.camera.top = 25;
-    sunLight.shadow.camera.bottom = -25;
-    sunLight.shadow.bias = -0.0005;
-    scene.add(sunLight);
+    // Lights
+    scene.add(new THREE.AmbientLight(0xffffff, 0.78));
+    var sun = new THREE.DirectionalLight(0xfff8e8, 1.45);
+    sun.position.set(28, 55, 32);
+    sun.castShadow = true;
+    sun.shadow.mapSize.width = sun.shadow.mapSize.height = 2048;
+    sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 160;
+    sun.shadow.camera.left = -28; sun.shadow.camera.right = 28;
+    sun.shadow.camera.top = 28; sun.shadow.camera.bottom = -28;
+    sun.shadow.bias = -0.0004;
+    scene.add(sun);
 
     // Groups
-    const worldGroup = new THREE.Group();
-    scene.add(worldGroup);
+    qrGroup = new THREE.Group(); scene.add(qrGroup);
+    treeGroup = new THREE.Group(); scene.add(treeGroup);
 
-    let groundMesh = null;
-    let qrGroup = new THREE.Group();
-    worldGroup.add(qrGroup);
-
-    let treeGroup = new THREE.Group();
-    worldGroup.add(treeGroup);
-
-    let particleSystem = null;
-    const PARTICLE_COUNT = 320;
-    const particlePositions = new Float32Array(PARTICLE_COUNT * 3);
-    const particleSpeeds = [];
-
-    function seededRandom(seed) {
-      const x = Math.sin(seed++) * 10000;
-      return x - Math.floor(x);
-    }
-
-    // Build Ground Island
-    function buildGround(groundColor) {
-      if (groundMesh) worldGroup.remove(groundMesh);
-      const geo = new THREE.CylinderGeometry(23, 25, 2.0, 56);
-      const mat = new THREE.MeshStandardMaterial({
-        color: groundColor,
-        roughness: 0.9,
-        metalness: 0.05
-      });
-      groundMesh = new THREE.Mesh(geo, mat);
-      groundMesh.position.y = -1.0;
-      groundMesh.receiveShadow = true;
-      worldGroup.add(groundMesh);
-    }
-
-    // Generate QR Matrix
-    function generateQRMatrix(url) {
-      try {
-        const qr = qrcode(0, "M");
-        qr.addData(url || "https://icqr.com/");
-        qr.make();
-        const size = qr.getModuleCount();
-        const matrix = [];
-        for (let r = 0; r < size; r++) {
-          const row = [];
-          for (let c = 0; c < size; c++) {
-            row.push(qr.isDark(r, c));
-          }
-          matrix.push(row);
-        }
-        return { size: size, matrix: matrix };
-      } catch (err) {
-        console.error("QR Generation error:", err);
-        return null;
-      }
-    }
-
-    // Build 3D QR Matrix Blocks
-    function buildQRMatrix(url, blockColor) {
-      while (qrGroup.children.length > 0) {
-        qrGroup.remove(qrGroup.children[0]);
-      }
-
-      const qrData = generateQRMatrix(url);
-      if (!qrData) return;
-
-      const size = qrData.size;
-      const matrix = qrData.matrix;
-      const blockSize = 0.65;
-      const gridOffset = (size * blockSize) / 2;
-
-      let darkCount = 0;
-      for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-          if (matrix[r][c]) darkCount++;
-        }
-      }
-
-      const boxGeo = new THREE.BoxGeometry(blockSize * 0.92, 0.48, blockSize * 0.92);
-      const blockMat = new THREE.MeshStandardMaterial({
-        color: blockColor,
-        roughness: 0.5,
-        metalness: 0.1
-      });
-
-      const instancedMesh = new THREE.InstancedMesh(boxGeo, blockMat, darkCount);
-      instancedMesh.castShadow = true;
-      instancedMesh.receiveShadow = true;
-
-      const dummy = new THREE.Object3D();
-      let idx = 0;
-
-      for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-          if (matrix[r][c]) {
-            const x = c * blockSize - gridOffset + blockSize / 2;
-            const z = r * blockSize - gridOffset + blockSize / 2;
-
-            const isTopLeftFinder = r < 7 && c < 7;
-            const isTopRightFinder = r < 7 && c >= size - 7;
-            const isBottomLeftFinder = r >= size - 7 && c < 7;
-            const isFinder = isTopLeftFinder || isTopRightFinder || isBottomLeftFinder;
-
-            const distFromCenter = Math.sqrt(x * x + z * z);
-            const height = isFinder ? 0.52 : (distFromCenter < 2.0 ? 0.28 : 0.48);
-
-            dummy.position.set(x, height / 2, z);
-            dummy.scale.set(1, height / 0.48, 1);
-            dummy.updateMatrix();
-            instancedMesh.setMatrixAt(idx++, dummy.matrix);
-          }
-        }
-      }
-
-      instancedMesh.instanceMatrix.needsUpdate = true;
-      qrGroup.add(instancedMesh);
-    }
-
-    // Build 3D Tree
-    function buildTree(trunkColor, leavesColors, seed) {
-      while (treeGroup.children.length > 0) {
-        treeGroup.remove(treeGroup.children[0]);
-      }
-
-      const trunkMat = new THREE.MeshStandardMaterial({
-        color: trunkColor,
-        roughness: 0.85,
-        flatShading: true
-      });
-
-      const trunkGeo = new THREE.CylinderGeometry(1.1, 1.7, 7.5, 8);
-      const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-      trunk.position.y = 3.75;
-      trunk.castShadow = true;
-      trunk.receiveShadow = true;
-      treeGroup.add(trunk);
-
-      const numBranches = 7;
-      let curSeed = seed;
-
-      for (let i = 0; i < numBranches; i++) {
-        const height = 4.2 + seededRandom(curSeed++) * 3.0;
-        const angle = (i / numBranches) * Math.PI * 2 + (seededRandom(curSeed++) - 0.5) * 0.4;
-        const length = 4.0 + seededRandom(curSeed++) * 2.5;
-
-        const branchGeo = new THREE.CylinderGeometry(0.35, 0.7, length, 6);
-        const branch = new THREE.Mesh(branchGeo, trunkMat);
-        branch.position.set(Math.cos(angle) * 1.4, height, Math.sin(angle) * 1.4);
-        branch.rotation.z = (Math.cos(angle) > 0 ? -1 : 1) * (0.65 + seededRandom(curSeed++) * 0.25);
-        branch.rotation.y = angle;
-        branch.castShadow = true;
-        treeGroup.add(branch);
-
-        const leafColor = leavesColors[i % leavesColors.length];
-        const leafMat = new THREE.MeshStandardMaterial({
-          color: leafColor,
-          roughness: 0.6,
-          flatShading: true
-        });
-
-        const cloudRadius = 2.4 + seededRandom(curSeed++) * 1.3;
-        const leafGeo = new THREE.DodecahedronGeometry(cloudRadius, 1);
-        const leafCloud = new THREE.Mesh(leafGeo, leafMat);
-        const endX = Math.cos(angle) * (length * 1.15);
-        const endZ = Math.sin(angle) * (length * 1.15);
-        leafCloud.position.set(endX, height + length * 0.68, endZ);
-        leafCloud.castShadow = true;
-        treeGroup.add(leafCloud);
-      }
-
-      const crownMat = new THREE.MeshStandardMaterial({
-        color: leavesColors[0],
-        roughness: 0.6,
-        flatShading: true
-      });
-      const crownGeo = new THREE.DodecahedronGeometry(3.6, 1);
-      const crown = new THREE.Mesh(crownGeo, crownMat);
-      crown.position.set(0, 9.6, 0);
-      crown.castShadow = true;
-      treeGroup.add(crown);
-    }
-
-    // Build Falling Petals
-    function buildParticles(petalColor) {
-      if (particleSystem) scene.remove(particleSystem);
-      particleSpeeds.length = 0;
-
-      const pGeo = new THREE.BufferGeometry();
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        particlePositions[i * 3 + 0] = (Math.random() - 0.5) * 36;
-        particlePositions[i * 3 + 1] = Math.random() * 22 + 2;
-        particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 36;
-        particleSpeeds.push({
-          y: Math.random() * 0.04 + 0.02,
-          x: Math.random() * 0.03 + 0.01,
-          rot: Math.random() * 0.05
-        });
-      }
-      pGeo.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
-
-      const pMat = new THREE.PointsMaterial({
-        color: petalColor,
-        size: 0.45,
-        transparent: true,
-        opacity: 0.85
-      });
-
-      particleSystem = new THREE.Points(pGeo, pMat);
-      scene.add(particleSystem);
-    }
-
-    function updateSceneTheme() {
-      const season = SEASONS[currentSeasonIndex];
-      scene.background = new THREE.Color(season.skyColor);
-      scene.fog = new THREE.FogExp2(season.skyColor, 0.014);
-
-      buildGround(season.groundColor);
-      buildQRMatrix(currentUrl, season.blockColor);
-      buildTree(season.trunkColor, season.leavesColors, currentSeed);
-      buildParticles(season.petalColor);
-    }
-
-    updateSceneTheme();
-
-    // ==========================================
-    // TOP-DOWN SCAN MODE TOGGLE
-    // ==========================================
-    const scanModeBtn = document.getElementById("btn-scan-mode");
-    const scanModeLabel = document.getElementById("scan-mode-label");
-
-    let targetCamPos = null;
-    let targetLookAt = null;
-
-    function toggleScanMode() {
-      isScanMode = !isScanMode;
-      if (isScanMode) {
-        targetCamPos = new THREE.Vector3(0, 36, 0.001);
-        targetLookAt = new THREE.Vector3(0, 0, 0);
-        scanModeLabel.textContent = "Orbit Mode";
-        scanModeBtn.className = "px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/25 transition";
-      } else {
-        targetCamPos = new THREE.Vector3(24, 30, 38);
-        targetLookAt = new THREE.Vector3(0, 3.5, 0);
-        scanModeLabel.textContent = "Scan Mode";
-        scanModeBtn.className = "px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-500/25 transition";
-      }
-    }
-    scanModeBtn.addEventListener("click", toggleScanMode);
-
-    // ==========================================
-    // SEED RANDOMIZER
-    // ==========================================
-    document.getElementById("btn-random-seed").addEventListener("click", () => {
-      currentSeed = Math.floor(Math.random() * 10000);
-      const season = SEASONS[currentSeasonIndex];
-      buildTree(season.trunkColor, season.leavesColors, currentSeed);
+    // Orbit controls (manual)
+    container.addEventListener("mousedown", function(e){ cam.dragging=true; cam.px=e.clientX; cam.py=e.clientY; });
+    window.addEventListener("mousemove", function(e){
+      if (!cam.dragging) return;
+      cam.tYaw -= (e.clientX - cam.px) * 0.007;
+      cam.tPitch = Math.max(0.05, Math.min(Math.PI/2 - 0.02, cam.tPitch + (e.clientY - cam.py) * 0.007));
+      cam.px = e.clientX; cam.py = e.clientY;
     });
+    window.addEventListener("mouseup", function(){ cam.dragging = false; });
+    container.addEventListener("wheel", function(e){ e.preventDefault(); cam.tDist = Math.max(14, Math.min(85, cam.tDist + e.deltaY * 0.04)); }, { passive:false });
+    container.addEventListener("touchstart", function(e){ if(e.touches.length===1){ cam.dragging=true; cam.px=e.touches[0].clientX; cam.py=e.touches[0].clientY; } }, { passive:true });
+    window.addEventListener("touchmove", function(e){
+      if (!cam.dragging || e.touches.length!==1) return;
+      cam.tYaw -= (e.touches[0].clientX - cam.px) * 0.009;
+      cam.tPitch = Math.max(0.05, Math.min(Math.PI/2-0.02, cam.tPitch + (e.touches[0].clientY - cam.py) * 0.009));
+      cam.px=e.touches[0].clientX; cam.py=e.touches[0].clientY;
+    }, { passive:true });
+    window.addEventListener("touchend", function(){ cam.dragging=false; });
 
-    // ==========================================
-    // URL UPDATER & SHARING
-    // ==========================================
-    function showToast(msg) {
-      const toast = document.getElementById("toast");
-      toast.textContent = msg;
-      toast.style.opacity = "1";
-      setTimeout(() => {
-        toast.style.opacity = "0";
-      }, 2500);
-    }
-
-    function updateUrlBar() {
-      const q = encodeQueryParam(currentUrl, currentSeasonIndex, currentPaletteIndex);
-      const newUrl = window.location.pathname + "?q=" + q;
-      window.history.replaceState(null, "", newUrl);
-    }
-
-    document.getElementById("btn-apply-url").addEventListener("click", () => {
-      const input = document.getElementById("target-url-input").value.trim();
-      if (!input) return;
-      currentUrl = input.startsWith("http") ? input : "https://" + input;
-      const season = SEASONS[currentSeasonIndex];
-      buildQRMatrix(currentUrl, season.blockColor);
-      updateUrlBar();
-      showToast("3D QR Matrix Updated!");
-    });
-
-    document.getElementById("target-url-input").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        document.getElementById("btn-apply-url").click();
-      }
-    });
-
-    document.getElementById("btn-share").addEventListener("click", () => {
-      const q = encodeQueryParam(currentUrl, currentSeasonIndex, currentPaletteIndex);
-      const shareUrl = window.location.origin + window.location.pathname + "?q=" + q;
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        showToast("Magic Tree Link Copied!");
-      });
-    });
-
-    document.getElementById("btn-download").addEventListener("click", () => {
-      renderer.render(scene, camera);
-      const dataUrl = renderer.domElement.toDataURL("image/png");
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = "cruseqr-tree-" + Date.now() + ".png";
-      a.click();
-      showToast("Snapshot downloaded!");
-    });
-
-    // ==========================================
-    // SAVE TO INSTABOX BACKEND (DYNAMIC QR)
-    // ==========================================
-    const saveBtn = document.getElementById("btn-save-backend");
-    const saveModal = document.getElementById("save-modal");
-    const modalClose = document.getElementById("modal-close");
-    const modalDone = document.getElementById("modal-done-btn");
-    const modalCopy = document.getElementById("modal-copy-btn");
-
-    saveBtn.addEventListener("click", async () => {
-      saveBtn.disabled = true;
-      saveBtn.innerHTML = '<span class="animate-spin">⏳</span> Saving...';
-      try {
-        const response = await fetch(BACKEND_URL + "/api/v1/qr", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          mode: "cors",
-          body: JSON.stringify({
-            title: "Magic Tree - " + SEASONS[currentSeasonIndex].name,
-            targetUrl: currentUrl,
-            type: "URL",
-            treeConfig: {
-              season: currentSeasonIndex,
-              palette: currentPaletteIndex,
-              seed: currentSeed
-            }
-          })
-        });
-
-        let shortUrl = BACKEND_URL + "/r/tree-" + Date.now().toString(36);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.shortUrl) shortUrl = data.shortUrl;
-        }
-
-        document.getElementById("modal-target-url").textContent = currentUrl;
-        document.getElementById("modal-short-url").value = shortUrl;
-        saveModal.classList.remove("hidden");
-      } catch (err) {
-        const fallbackShort = BACKEND_URL + "/r/magic-" + Math.random().toString(36).substring(2, 7);
-        document.getElementById("modal-target-url").textContent = currentUrl;
-        document.getElementById("modal-short-url").value = fallbackShort;
-        saveModal.classList.remove("hidden");
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg><span class="hidden sm:inline">Save to Backend</span>';
-      }
-    });
-
-    modalClose.onclick = () => saveModal.classList.add("hidden");
-    modalDone.onclick = () => saveModal.classList.add("hidden");
-    modalCopy.onclick = () => {
-      const input = document.getElementById("modal-short-url");
-      input.select();
-      navigator.clipboard.writeText(input.value);
-      modalCopy.textContent = "Copied!";
-      setTimeout(() => (modalCopy.textContent = "Copy"), 2000);
-    };
-
-    // ==========================================
-    // ANIMATION & RENDER LOOP
-    // ==========================================
-    const clock = new THREE.Clock();
-
-    function animate() {
-      requestAnimationFrame(animate);
-      const delta = clock.getDelta();
-      const time = clock.getElapsedTime();
-
-      if (targetCamPos) {
-        camera.position.lerp(targetCamPos, 0.08);
-        controls.target.lerp(targetLookAt, 0.08);
-        if (camera.position.distanceTo(targetCamPos) < 0.2) {
-          targetCamPos = null;
-        }
-      }
-
-      if (!isScanMode && controls.state === -1) {
-        worldGroup.rotation.y += 0.001;
-      }
-
-      if (particleSystem) {
-        const positions = particleSystem.geometry.attributes.position.array;
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-          const spd = particleSpeeds[i];
-          positions[i * 3 + 1] -= spd.y;
-          positions[i * 3 + 0] += Math.sin(time + i) * 0.02 + spd.x;
-          positions[i * 3 + 2] += Math.cos(time + i) * 0.02;
-
-          if (positions[i * 3 + 1] < 0) {
-            positions[i * 3 + 1] = 20;
-            positions[i * 3 + 0] = (Math.random() - 0.5) * 35;
-            positions[i * 3 + 2] = (Math.random() - 0.5) * 35;
-          }
-        }
-        particleSystem.geometry.attributes.position.needsUpdate = true;
-      }
-
-      controls.update();
-      renderer.render(scene, camera);
-    }
-
-    animate();
-
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
+    window.addEventListener("resize", function(){
+      camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(container.clientWidth, container.clientHeight);
     });
-  </script>
+
+    rebuildScene();
+    animate();
+  }
+
+  function animate() {
+    animId = requestAnimationFrame(animate);
+    var THREE = window.THREE;
+    var t = clock.getElapsedTime();
+
+    cam.pitch += (cam.tPitch - cam.pitch) * 0.09;
+    cam.yaw   += (cam.tYaw   - cam.yaw)   * 0.09;
+    cam.dist  += (cam.tDist  - cam.dist)  * 0.09;
+
+    camera.position.set(
+      cam.dist * Math.sin(cam.pitch) * Math.sin(cam.yaw),
+      cam.dist * Math.cos(cam.pitch),
+      cam.dist * Math.sin(cam.pitch) * Math.cos(cam.yaw)
+    );
+    camera.lookAt(0, 3.5, 0);
+
+    // Animate petals
+    if (petalMesh) {
+      var pts = petalMesh.geometry.attributes.position.array;
+      var n = pts.length / 3;
+      for (var i = 0; i < n; i++) {
+        pts[i*3]   += Math.sin(t * 0.4 + i * 1.3) * 0.012;
+        pts[i*3+1] -= 0.028 + Math.sin(t * 0.3 + i) * 0.006;
+        pts[i*3+2] += Math.cos(t * 0.4 + i * 1.7) * 0.012;
+        if (pts[i*3+1] < -1) {
+          pts[i*3]   = (Math.random()-0.5)*34;
+          pts[i*3+1] = 20 + Math.random() * 8;
+          pts[i*3+2] = (Math.random()-0.5)*34;
+        }
+      }
+      petalMesh.geometry.attributes.position.needsUpdate = true;
+    }
+
+    // Gentle sway
+    if (treeGroup) treeGroup.rotation.y = Math.sin(t * 0.4) * 0.012;
+
+    renderer.render(scene, camera);
+  }
+
+  function clearGroup(g) {
+    while (g.children.length) {
+      var c = g.children[0];
+      if (c.geometry) c.geometry.dispose();
+      if (c.material) { if (Array.isArray(c.material)) c.material.forEach(function(m){m.dispose()}); else c.material.dispose(); }
+      g.remove(c);
+    }
+  }
+
+  function rebuildScene() {
+    if (!window.THREE || !scene) return;
+    var THREE = window.THREE;
+    var s = SEASONS[state.season];
+    var paletteHex = PALETTES[state.palette].hex;
+
+    // Background + fog
+    scene.background = new THREE.Color(s.bgHex);
+    scene.fog = new THREE.FogExp2(s.fog, 0.011);
+    document.body.style.background = s.bg;
+
+    // Ground
+    if (groundMesh) scene.remove(groundMesh);
+    var gGeo = new THREE.CylinderGeometry(21, 23, 2.2, 56);
+    var gMat = new THREE.MeshStandardMaterial({ color: s.ground, roughness: 0.92, metalness: 0.03 });
+    groundMesh = new THREE.Mesh(gGeo, gMat);
+    groundMesh.position.y = -1.1;
+    groundMesh.receiveShadow = true;
+    scene.add(groundMesh);
+
+    // QR blocks
+    clearGroup(qrGroup);
+    buildQRBlocks(state.url, s.block, state.scanMode, function(mesh){
+      if (mesh) qrGroup.add(mesh);
+    });
+
+    // Tree
+    clearGroup(treeGroup);
+    buildTree(treeGroup, s.trunk, s.leaf1, s.leaf2, paletteHex, state.seed);
+
+    // Petals
+    if (petalMesh) scene.remove(petalMesh);
+    var pCount = 180;
+    var pos = new Float32Array(pCount * 3);
+    for (var i = 0; i < pCount; i++) {
+      pos[i*3]   = (Math.random()-0.5)*34;
+      pos[i*3+1] = Math.random()*22+1;
+      pos[i*3+2] = (Math.random()-0.5)*34;
+    }
+    var pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    var pMat = new THREE.PointsMaterial({ color: paletteHex, size: 0.44, transparent:true, opacity:0.88 });
+    petalMesh = new THREE.Points(pGeo, pMat);
+    scene.add(petalMesh);
+  }
+
+  function buildQRBlocks(url, blockColor, scanMode, cb) {
+    try {
+      var qr = qrcode(0, "M");
+      qr.addData(url);
+      qr.make();
+      var THREE = window.THREE;
+      var size = qr.getModuleCount();
+      var bs = 0.56;
+      var offset = (size * bs) / 2;
+      var count = 0;
+      for (var r = 0; r < size; r++)
+        for (var c = 0; c < size; c++)
+          if (qr.isDark(r, c)) count++;
+
+      var geo = new THREE.BoxGeometry(bs*0.9, 0.42, bs*0.9);
+      var mat = new THREE.MeshStandardMaterial({ color: blockColor, roughness: 0.55, metalness: 0.08 });
+      var mesh = new THREE.InstancedMesh(geo, mat, count);
+      mesh.castShadow = mesh.receiveShadow = true;
+
+      var dummy = new THREE.Object3D();
+      var idx = 0;
+      for (var r = 0; r < size; r++) {
+        for (var c = 0; c < size; c++) {
+          if (!qr.isDark(r, c)) continue;
+          var x = c * bs - offset + bs/2;
+          var z = r * bs - offset + bs/2;
+          var dist = Math.sqrt(x*x + z*z);
+          var h = (!scanMode && dist < 1.8) ? 0.22 : 0.42;
+          dummy.position.set(x, h/2, z);
+          dummy.scale.set(1, h/0.42, 1);
+          dummy.updateMatrix();
+          mesh.setMatrixAt(idx++, dummy.matrix);
+        }
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      cb(mesh);
+    } catch(e) { cb(null); }
+  }
+
+  function buildTree(group, trunkColor, leaf1Color, leaf2Color, paletteHex, seed) {
+    var THREE = window.THREE;
+    var rng = makeRng(seed);
+    var trunkMat = new THREE.MeshStandardMaterial({ color: trunkColor, roughness: 0.88 });
+    var leafMat  = new THREE.MeshStandardMaterial({ color: paletteHex, roughness: 0.6, flatShading: true });
+    var leaf2Mat = new THREE.MeshStandardMaterial({ color: leaf2Color, roughness: 0.6, flatShading: true });
+
+    function branch(ox, oy, oz, dx, dy, dz, len, r, depth) {
+      if (depth > 5 || r < 0.04) {
+        var n = 2 + Math.floor(rng() * 3);
+        for (var i = 0; i < n; i++) {
+          var geo = new THREE.DodecahedronGeometry(0.28 + rng()*0.26, 0);
+          var m = new THREE.Mesh(geo, rng() > 0.5 ? leafMat : leaf2Mat);
+          m.position.set(ox + (rng()-0.5)*0.8, oy + rng()*0.5, oz + (rng()-0.5)*0.8);
+          m.castShadow = true;
+          group.add(m);
+        }
+        return;
+      }
+      var mag = Math.sqrt(dx*dx+dy*dy+dz*dz);
+      dx/=mag; dy/=mag; dz/=mag;
+      var ex = ox+dx*len, ey = oy+dy*len, ez = oz+dz*len;
+      var mx = (ox+ex)/2, my = (oy+ey)/2, mz = (oz+ez)/2;
+
+      var cGeo = new THREE.CylinderGeometry(r*0.72, r, len, 7);
+      var cm = new THREE.Mesh(cGeo, trunkMat);
+      cm.position.set(mx, my, mz);
+      // align cylinder Y-axis to dir
+      var up = new THREE.Vector3(0,1,0);
+      var dir = new THREE.Vector3(dx,dy,dz).normalize();
+      cm.quaternion.setFromUnitVectors(up, dir);
+      cm.castShadow = cm.receiveShadow = true;
+      group.add(cm);
+
+      if (depth >= 3) {
+        var fg = new THREE.DodecahedronGeometry(0.5 + rng()*0.5, 1);
+        var fm = new THREE.Mesh(fg, rng() > 0.4 ? leafMat : leaf2Mat);
+        fm.position.set(ex, ey, ez);
+        fm.castShadow = true;
+        group.add(fm);
+      }
+
+      var kids = depth === 0 ? 4 : (rng() > 0.4 ? 3 : 2);
+      for (var i = 0; i < kids; i++) {
+        var spread = 0.35 + rng()*0.4;
+        var rot = (i/kids)*Math.PI*2 + (rng()-0.5)*0.6;
+        var ndx = dx + Math.cos(rot)*spread;
+        var ndy = dy + 0.15 + rng()*0.35;
+        var ndz = dz + Math.sin(rot)*spread;
+        branch(ex, ey, ez, ndx, ndy, ndz, len*(0.68+rng()*0.08), r*(0.62+rng()*0.08), depth+1);
+      }
+    }
+
+    branch(0, 0, 0, 0, 1, 0, 4.2, 0.72, 0);
+
+    // Crown
+    var cGeo = new THREE.DodecahedronGeometry(2.8 + rng()*0.8, 1);
+    var cm = new THREE.Mesh(cGeo, leafMat);
+    cm.position.set(0, 10.5, 0);
+    cm.castShadow = true;
+    group.add(cm);
+  }
+
+})();
+</script>
 </body>
 </html>
