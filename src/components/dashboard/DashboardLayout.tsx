@@ -65,6 +65,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const navItems = [
     { label: "Overview", href: "/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
     { label: "Create QR Code", href: "/dashboard/create", icon: <PlusCircle className="w-4 h-4 text-primary" /> },
+    { label: "3D Magic Tree", href: "/tree", icon: <Sparkles className="w-4 h-4 text-amber-500" /> },
     { label: "My QR Codes", href: "/dashboard/qr-codes", icon: <QrCode className="w-4 h-4" /> },
     { label: "AI QR Art Studio", href: "/dashboard/ai-art", icon: <Sparkles className="w-4 h-4 text-accent-cyan" /> },
     { label: "Link in Bio", href: "/dashboard/bio", icon: <Layers className="w-4 h-4 text-emerald-400" /> },

@@ -28,6 +28,7 @@ export function Navbar() {
   }, []);
 
   const navLinks = [
+    { label: "3D Magic Tree", href: "/tree" },
     { label: "Features", href: "/features" },
     { label: "AI Art Studio", href: "/#ai-art" },
     { label: "Pricing", href: "/pricing" },
