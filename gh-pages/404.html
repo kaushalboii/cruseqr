@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting...</title>
+  <script>
+    // GitHub Pages SPA redirect handler: preserve query params and path
+    var pathSegmentsToKeep = 1;
+    var l = window.location;
+    var redirectUrl = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/index.html' +
+      (l.search ? l.search : '') + l.hash;
+    window.location.replace(redirectUrl);
+  </script>
+</head>
+<body>
+  <p>Redirecting to <a href="index.html">CruseQR Magic Tree</a>...</p>
+</body>
+</html>
