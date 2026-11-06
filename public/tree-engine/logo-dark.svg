@@ -1,20 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 142" width="250" height="142">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 142" width="260" height="142">
   <defs>
     <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f59e0b" />
-      <stop offset="100%" stop-color="#d97706" />
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#f59e0b" />
     </linearGradient>
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
   </defs>
-  <!-- Stylized Brand Title -->
+  <!-- Stylized Brand Title for Dark Obsidian Theme -->
   <g transform="translate(14, 46)">
-    <text x="0" y="24" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="34" font-weight="900" letter-spacing="-1.5" fill="#1c1917">
-      Cruse<tspan fill="#d97706">QR</tspan>
+    <text x="0" y="24" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="34" font-weight="900" letter-spacing="-1.5" fill="#f8fafc">
+      Cruse<tspan fill="url(#goldGrad)">QR</tspan>
     </text>
   </g>
-  <!-- Sub-badge: MAGIC TREE with border and leaf/sparkle -->
+  <!-- Sub-badge: MAGIC TREE in frosted dark glass with neon gold border & emerald seed -->
   <g transform="translate(14, 84)">
-    <rect x="0" y="0" width="132" height="28" rx="14" fill="#fef3c7" stroke="#d97706" stroke-width="1.8" />
-    <circle cx="14" cy="14" r="4.5" fill="#d97706" />
-    <text x="25" y="18" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="12" font-weight="800" letter-spacing="1.2" fill="#92400e">MAGIC TREE</text>
+    <rect x="0" y="0" width="136" height="28" rx="14" fill="rgba(15, 23, 42, 0.85)" stroke="#f59e0b" stroke-width="1.5" />
+    <circle cx="15" cy="14" r="4.5" fill="#10b981" />
+    <text x="27" y="18" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#fbbf24">MAGIC TREE</text>
   </g>
 </svg>
